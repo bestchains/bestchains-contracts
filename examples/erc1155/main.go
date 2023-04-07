@@ -34,7 +34,7 @@ func main() {
 	erc1155Contract.TransactionContextHandler = new(context.Context)
 	erc1155Contract.BeforeTransaction = context.BeforeTransaction
 
-	cc, err := contractapi.NewChaincode(nonceContract, erc1155Contract)
+	cc, err := contractapi.NewChaincode(erc1155Contract)
 	if err != nil {
 		panic(err.Error())
 	}
