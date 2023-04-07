@@ -7,7 +7,7 @@ ADD . $GOPATH/go-contract
 WORKDIR $GOPATH/go-contract
 
 ENV VERSION=0.1.0
-ENV PACKAGE=$GOPATH/go-contract/examples/nonce
+ENV PACKAGE=$GOPATH/go-contract/examples/basic
 
 ENV GOPROXY=https://goproxy.cn,direct
 RUN go build -ldflags="-X main.version=0.0.1" -o /go/bin/go-contract ${PACKAGE}

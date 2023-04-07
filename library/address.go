@@ -72,6 +72,13 @@ func (addr *Address) FromPublicKey(pub interface{}) error {
 	return nil
 }
 
+func (addr Address) EmptyAddress() bool {
+	if addr == ZeroAddress || addr == "" || addr == AddressPrefix {
+		return true
+	}
+	return false
+}
+
 func (addr Address) Validate() error {
 	// Check length
 	if len(addr) != 42 {

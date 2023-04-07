@@ -16,7 +16,10 @@ limitations under the License.
 
 package library
 
-import "strconv"
+import (
+	"encoding/hex"
+	"strconv"
+)
 
 func BytesToUint64(input []byte) (uint64, error) {
 	if input == nil {
@@ -42,4 +45,8 @@ func BytesToCounter(input []byte) (*Counter, error) {
 		return nil, err
 	}
 	return &Counter{number: count}, nil
+}
+
+func BytesToHexString(input []byte) string {
+	return hex.EncodeToString(input)
 }

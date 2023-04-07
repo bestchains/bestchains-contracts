@@ -17,17 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"github.com/bestchains/bestchains-contracts/contracts/access"
 	"github.com/bestchains/bestchains-contracts/contracts/basic"
-	"github.com/bestchains/bestchains-contracts/library/context"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 func main() {
-	basicContract := new(basic.BasicContract)
-	basicContract.Name = "org.bestchains.com.BasicContract"
-	basicContract.TransactionContextHandler = new(context.Context)
-	basicContract.BeforeTransaction = context.BeforeTransaction
-
+	basicContract := basic.NewBasicContract(access.NewOwnableContract())
 	cc, err := contractapi.NewChaincode(basicContract)
 	if err != nil {
 		panic(err.Error())

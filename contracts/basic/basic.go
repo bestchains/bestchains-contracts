@@ -17,6 +17,7 @@ limitations under the License.
 package basic
 
 import (
+	"github.com/bestchains/bestchains-contracts/contracts/access"
 	"github.com/bestchains/bestchains-contracts/library/context"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -26,9 +27,22 @@ var _ IBasic = new(BasicContract)
 // BasicContract provides simple key-value Get/Put
 type BasicContract struct {
 	contractapi.Contract
+	// Ownable
+	access.IOwnable
+}
+
+func NewBasicContract(ownable access.IOwnable) *BasicContract {
+	basicContract := new(BasicContract)
+	basicContract.Name = "org.bestchains.com.BasicContract"
+	basicContract.IOwnable = ownable
+	basicContract.TransactionContextHandler = new(context.Context)
+	basicContract.BeforeTransaction = context.BeforeTransaction
+
+	return basicContract
 }
 
 func (bc *BasicContract) PutValue(ctx context.ContextInterface, key string, value string) error {
+
 	return ctx.GetStub().PutState(key, []byte(value))
 }
 func (bc *BasicContract) GetValue(ctx context.ContextInterface, key string) (string, error) {
