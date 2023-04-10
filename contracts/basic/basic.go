@@ -17,9 +17,20 @@ limitations under the License.
 package basic
 
 import (
+	"encoding/hex"
+
 	"github.com/bestchains/bestchains-contracts/contracts/access"
+	"github.com/bestchains/bestchains-contracts/library"
 	"github.com/bestchains/bestchains-contracts/library/context"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/sha3"
+)
+
+const (
+	IndexerKey  = "basic~index"
+	BasicKey    = "basic~index~kid"
+	BasicValKey = "basic~kid-val"
 )
 
 var _ IBasic = new(BasicContract)
@@ -34,21 +45,162 @@ type BasicContract struct {
 func NewBasicContract(ownable access.IOwnable) *BasicContract {
 	basicContract := new(BasicContract)
 	basicContract.Name = "org.bestchains.com.BasicContract"
+
 	basicContract.IOwnable = ownable
+
 	basicContract.TransactionContextHandler = new(context.Context)
 	basicContract.BeforeTransaction = context.BeforeTransaction
 
 	return basicContract
 }
 
-func (bc *BasicContract) PutValue(ctx context.ContextInterface, key string, value string) error {
-
-	return ctx.GetStub().PutState(key, []byte(value))
+// Total key-value paris stored
+func (bc *BasicContract) Total(ctx context.ContextInterface) (uint64, error) {
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return curr.Current(), nil
 }
-func (bc *BasicContract) GetValue(ctx context.ContextInterface, key string) (string, error) {
-	bytes, err := ctx.GetStub().GetState(key)
+
+// PutValue stores kval with pre-defined key calculation which returns
+func (bc *BasicContract) PutValue(ctx context.ContextInterface, val string) (string, error) {
+	if val == "" {
+		return "", errors.New("empty input value")
+	}
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to get counter")
+	}
+
+	kid := calculateKID(curr, []byte(val))
+
+	// save key id
+	basicKey, err := ctx.GetStub().CreateCompositeKey(BasicKey, []string{curr.String()})
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: invalid composite BasicKey")
+	}
+	err = ctx.GetStub().PutState(basicKey, []byte(kid))
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to put BasicKey")
+	}
+
+	// save value
+	basicValKey, err := ctx.GetStub().CreateCompositeKey(BasicValKey, []string{kid})
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: invalid composite BasicValKey")
+	}
+	err = ctx.GetStub().PutState(basicValKey, []byte(val))
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to put BasicKey")
+	}
+
+	// increase counter
+	err = incrementCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to increase counter")
+	}
+
+	err = ctx.EmitEvent("PutValue", &EventPutValue{
+		Index: curr.Current(),
+		KID:   kid,
+	})
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: faield to emit EventPutValue")
+	}
+
+	return kid, nil
+}
+
+// calculateKID with `sha3(counter,kval)` which returns hex encoded string
+func calculateKID(counter *library.Counter, val []byte) string {
+	hashedPubKey := sha3.Sum256(append(counter.Bytes(), val...))
+	return hex.EncodeToString(hashedPubKey[12:])
+}
+
+func currentCounter(ctx context.ContextInterface) (*library.Counter, error) {
+	val, err := ctx.GetStub().GetState(IndexerKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "Basic: failed to read counter")
+	}
+	return library.BytesToCounter(val)
+}
+
+func incrementCounter(ctx context.ContextInterface) error {
+	val, err := ctx.GetStub().GetState(IndexerKey)
+	if err != nil {
+		return errors.Wrap(err, "Basic: failed to read counter")
+	}
+
+	counter, err := library.BytesToCounter(val)
+	if err != nil {
+		return errors.Wrap(err, "Basic: invalid counter")
+	}
+	counter.Increment()
+	err = ctx.GetStub().PutState(IndexerKey, counter.Bytes())
+	if err != nil {
+		return errors.Wrap(err, "Basic: failed to update counter")
+	}
+
+	return nil
+}
+
+// GetValue get kval with counter index or key id
+func (bc *BasicContract) GetValueByIndex(ctx context.ContextInterface, index string) (string, error) {
+	// try counter
+	counter, err := library.BytesToCounter([]byte(index))
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to get val by counter or key id")
+	}
+	val, err := getValByCounter(ctx, counter)
+	if err != nil {
+		return "", errors.Wrap(err, "Basic: failed to get val by counter or key id")
+	}
+
+	return string(val), nil
+}
+
+func getValByCounter(ctx context.ContextInterface, counter *library.Counter) ([]byte, error) {
+	basicKey, err := ctx.GetStub().CreateCompositeKey(BasicKey, []string{counter.String()})
+	if err != nil {
+		return nil, errors.Wrap(err, "Basic: invalid composite BasicKey")
+	}
+
+	kid, err := ctx.GetStub().GetState(basicKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "Basic: failed to get kid with index")
+	}
+
+	if kid == nil {
+		return nil, errors.Errorf("Basic: kid with counter %s not found", counter.String())
+	}
+
+	return getValByKID(ctx, string(kid))
+}
+
+// GetValue get kval with counter index or key id
+func (bc *BasicContract) GetValueByKID(ctx context.ContextInterface, counterOrKID string) (string, error) {
+	val, err := getValByKID(ctx, counterOrKID)
 	if err != nil {
 		return "", err
 	}
-	return string(bytes), nil
+	return string(val), nil
+}
+
+func getValByKID(ctx context.ContextInterface, kid string) ([]byte, error) {
+	basicValKey, err := ctx.GetStub().CreateCompositeKey(BasicValKey, []string{kid})
+	if err != nil {
+		return nil, errors.Wrap(err, "Basic: invalid composite BasicValKey")
+	}
+
+	val, err := ctx.GetStub().GetState(basicValKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if val == nil {
+		return nil, errors.Errorf("Basic: value with kid %s not found", kid)
+	}
+
+	return val, nil
 }
