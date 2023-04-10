@@ -18,7 +18,19 @@ package basic
 
 import "github.com/bestchains/bestchains-contracts/library/context"
 
+type EventPutValue struct {
+	Index uint64
+	KID   string
+}
+
+// IBasic provides common data Put/Get
 type IBasic interface {
-	PutValue(ctx context.ContextInterface, key string, value string) error
-	GetValue(ctx context.ContextInterface, key string) (string, error)
+	// Total k/v paris stored
+	Total(ctx context.ContextInterface) (uint64, error)
+	// PutValue stores kval with pre-defined key calculation
+	PutValue(ctx context.ContextInterface, val string) (string, error)
+	// GetValueByIndex get kval with index
+	GetValueByIndex(ctx context.ContextInterface, index string) (string, error)
+	// GetValueByKID get kval with key id
+	GetValueByKID(ctx context.ContextInterface, kid string) (string, error)
 }

@@ -26,6 +26,13 @@ type Counter struct {
 	number uint64
 }
 
+func (counter *Counter) String() string {
+	if counter == nil {
+		return ""
+	}
+	return Uint64ToString(counter.number)
+}
+
 func (counter *Counter) Bytes() []byte {
 	if counter == nil {
 		return []byte{}
