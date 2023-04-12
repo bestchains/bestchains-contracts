@@ -13,6 +13,10 @@ require (
 	k8s.io/klog/v2 v2.90.1
 )
 
+replace (
+	github.com/IBM-Blockchain/fabric-operator v0.0.0-00010101000000-000000000000 => github.com/bestchains/fabric-operator v0.1.3-0.20230404140140-4d4bef022ae9
+)
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.2.2 // indirect
