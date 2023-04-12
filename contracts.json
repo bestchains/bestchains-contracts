@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Basic",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide basic key-value storage(Simply Put/Get/Total) with optimized key id auto-calculation.",
+    "package": "example/basic",
+    "status": "DONE"
+  },
+  {
+    "name": "AcccessControl",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide role-based access control",
+    "package": "example/acl",
+    "status": "DONE"
+  },
+  {
+    "name": "Nonce",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide account nonce management",
+    "package": "example/nonce",
+    "status": "DONE"
+  },
+  {
+    "name": "Timelock",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide a basic exmaple for Timelock library usage",
+    "package": "example/timelock",
+    "status": "DONE"
+  },
+  {
+    "name": "ERC1155",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide a erc1155 implementation on hypleredger fabric",
+    "package": "example/erc1155",
+    "status": "WIP"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "存证合约",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "提供存证应用的基础功能,通用的Key-Value存储",
+    "package": "example/basic",
+    "status": "已完成"
+  },
+  {
+    "name": "访问控制合约",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "提供基于角色的访问控制",
+    "package": "example/acl",
+    "status": "已完成"
+  },
+  {
+    "name": "账户Nonce管理",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "提供类以太坊账户Nonce值的视线",
+    "package": "example/nonce",
+    "status": "已完成"
+  },
+  {
+    "name": "时间锁合约",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "提供时间锁合约,用于实现操作延时执行",
+    "package": "example/timelock",
+    "status": "已完成"
+  },
+  {
+    "name": "NFT合约",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "基于ERC1155协议实现的NFT合约",
+    "package": "example/erc1155",
+    "status": "进行中"
+  }
+]
