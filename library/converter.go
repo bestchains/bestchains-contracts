@@ -50,3 +50,14 @@ func BytesToCounter(input []byte) (*Counter, error) {
 func BytesToHexString(input []byte) string {
 	return hex.EncodeToString(input)
 }
+
+func BytesToUint8(input []byte) (uint8, error) {
+	if input == nil {
+		return 0, nil
+	}
+	ui8, err := strconv.ParseUint(string(input), 10, 8)
+	if err != nil {
+		return 0, err
+	}
+	return uint8(ui8), nil
+}
