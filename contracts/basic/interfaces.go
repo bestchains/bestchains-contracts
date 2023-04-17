@@ -16,7 +16,11 @@ limitations under the License.
 
 package basic
 
-import "github.com/bestchains/bestchains-contracts/library/context"
+import (
+	"github.com/bestchains/bestchains-contracts/contracts/access"
+	"github.com/bestchains/bestchains-contracts/contracts/nonce"
+	"github.com/bestchains/bestchains-contracts/library/context"
+)
 
 type EventPutValue struct {
 	Index uint64
@@ -25,10 +29,14 @@ type EventPutValue struct {
 
 // IBasic provides common data Put/Get
 type IBasic interface {
+	nonce.INonce
+	access.IAccessControl
+	// Initialize the contract
+	Initialize(ctx context.ContextInterface) error
 	// Total k/v paris stored
 	Total(ctx context.ContextInterface) (uint64, error)
 	// PutValue stores kval with pre-defined key calculation
-	PutValue(ctx context.ContextInterface, val string) (string, error)
+	PutValue(ctx context.ContextInterface, msg context.Message, val string) (string, error)
 	// GetValueByIndex get kval with index
 	GetValueByIndex(ctx context.ContextInterface, index string) (string, error)
 	// GetValueByKID get kval with key id

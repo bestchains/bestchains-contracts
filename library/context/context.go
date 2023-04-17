@@ -77,7 +77,7 @@ func BeforeTransaction(ctx ContextInterface) error {
 }
 
 func (ctx *Context) Operator() library.Address {
-	if ctx.operator == library.ZeroAddress {
+	if ctx.operator == library.ZeroAddress || ctx.operator.String() == "" {
 		crt, err := ctx.GetClientIdentity().GetX509Certificate()
 		if err != nil {
 			return library.ZeroAddress

@@ -47,9 +47,15 @@ type ERC1155 struct {
 }
 
 func NewERC1155(nonce nonce.INonce) *ERC1155 {
-	return &ERC1155{
-		INonce: nonce,
-	}
+	erc1155Contract := new(ERC1155)
+
+	erc1155Contract.Name = "org.bestchains.com.ERC1155Contract"
+	erc1155Contract.TransactionContextHandler = new(context.Context)
+	erc1155Contract.BeforeTransaction = context.BeforeTransaction
+
+	erc1155Contract.INonce = nonce
+
+	return erc1155Contract
 }
 
 func (erc1155 *ERC1155) Initialize(ctx context.ContextInterface, name string, symbol string) error {

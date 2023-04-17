@@ -20,6 +20,7 @@ import (
 	"encoding/hex"
 
 	"github.com/bestchains/bestchains-contracts/contracts/access"
+	"github.com/bestchains/bestchains-contracts/contracts/nonce"
 	"github.com/bestchains/bestchains-contracts/library"
 	"github.com/bestchains/bestchains-contracts/library/context"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -33,25 +34,53 @@ const (
 	BasicValKey = "basic~kid-val"
 )
 
+var (
+	RoleAdmin  = sha3.Sum256([]byte("role~admin"))
+	RoleClient = sha3.Sum256([]byte("role~client"))
+)
+
 var _ IBasic = new(BasicContract)
 
 // BasicContract provides simple key-value Get/Put
 type BasicContract struct {
 	contractapi.Contract
+
+	nonce.INonce
 	// Ownable
-	access.IOwnable
+	access.IAccessControl
 }
 
-func NewBasicContract(ownable access.IOwnable) *BasicContract {
+func NewBasicContract(nonceContract nonce.INonce, aclContract access.IAccessControl) *BasicContract {
 	basicContract := new(BasicContract)
 	basicContract.Name = "org.bestchains.com.BasicContract"
 
-	basicContract.IOwnable = ownable
+	basicContract.INonce = nonceContract
+	basicContract.IAccessControl = aclContract
 
 	basicContract.TransactionContextHandler = new(context.Context)
 	basicContract.BeforeTransaction = context.BeforeTransaction
 
 	return basicContract
+}
+
+func (bc *BasicContract) onlyRole(ctx context.ContextInterface, role []byte) error {
+	result, err := bc.HasRole(ctx, role, ctx.MsgSender().String())
+	if err != nil {
+		return errors.Wrap(err, "onlyRole")
+	}
+	if !result {
+		return errors.New("onlyRole: not authorized")
+	}
+	return nil
+}
+
+// Initialize the contract by setting transactin operator as owner
+func (bc *BasicContract) Initialize(ctx context.ContextInterface) error {
+	err := bc.IAccessControl.Initialize(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Total key-value paris stored
@@ -64,7 +93,24 @@ func (bc *BasicContract) Total(ctx context.ContextInterface) (uint64, error) {
 }
 
 // PutValue stores kval with pre-defined key calculation which returns
-func (bc *BasicContract) PutValue(ctx context.ContextInterface, val string) (string, error) {
+func (bc *BasicContract) PutValue(ctx context.ContextInterface, msg context.Message, val string) (string, error) {
+	var err error
+
+	// check msg sender has this permission
+	if err = bc.onlyRole(ctx, RoleClient[:]); err != nil {
+		return "", errors.Wrap(err, "onlyClient")
+	}
+
+	// TODO: Gas calculation
+
+	// increase nonce
+	if err = bc.INonce.Check(ctx, ctx.MsgSender().String(), msg.Nonce); err != nil {
+		return "", err
+	}
+	if _, err = bc.INonce.Increment(ctx, ctx.MsgSender().String()); err != nil {
+		return "", err
+	}
+
 	if val == "" {
 		return "", errors.New("empty input value")
 	}
@@ -179,8 +225,8 @@ func getValByCounter(ctx context.ContextInterface, counter *library.Counter) ([]
 }
 
 // GetValue get kval with counter index or key id
-func (bc *BasicContract) GetValueByKID(ctx context.ContextInterface, counterOrKID string) (string, error) {
-	val, err := getValByKID(ctx, counterOrKID)
+func (bc *BasicContract) GetValueByKID(ctx context.ContextInterface, kid string) (string, error) {
+	val, err := getValByKID(ctx, kid)
 	if err != nil {
 		return "", err
 	}

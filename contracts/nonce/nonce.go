@@ -34,6 +34,14 @@ type Nonce struct {
 	contractapi.Contract
 }
 
+func NewNonceContract() INonce {
+	nonceContract := new(Nonce)
+	nonceContract.Name = "org.bestchains.com.NonceContract"
+	nonceContract.TransactionContextHandler = new(context.Context)
+	nonceContract.BeforeTransaction = context.BeforeTransaction
+	return nonceContract
+}
+
 func (nonce *Nonce) Check(ctx context.ContextInterface, account string, dstNonce uint64) error {
 	curr, err := nonce.Current(ctx, account)
 	if err != nil {

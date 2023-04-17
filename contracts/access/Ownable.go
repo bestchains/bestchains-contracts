@@ -49,13 +49,10 @@ func NewOwnableContract() *OwnableContract {
 }
 
 // Initialize will set the owner
-func (ownable *OwnableContract) Initialize(ctx context.ContextInterface, initOwner string) error {
+func (ownable *OwnableContract) Initialize(ctx context.ContextInterface) error {
 	var err error
 
-	// Set to Operator if `initOwner` is empty
-	if library.Address(initOwner).EmptyAddress() {
-		initOwner = ctx.Operator().String()
-	}
+	initOwner := ctx.Operator().String()
 
 	if err := ownable.initializable.TryInitialize(ctx, OwnableInitializedKey); err != nil {
 		return err
