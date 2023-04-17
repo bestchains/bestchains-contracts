@@ -97,7 +97,7 @@ func (addr Address) Validate() error {
 	}
 
 	// Check null address
-	if addr == "0x0000000000000000000000000000000000000000" {
+	if addr == ZeroAddress {
 		return ErrInvalidAddressNull
 	}
 

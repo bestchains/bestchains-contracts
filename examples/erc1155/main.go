@@ -19,20 +19,11 @@ package main
 import (
 	"github.com/bestchains/bestchains-contracts/contracts/nonce"
 	"github.com/bestchains/bestchains-contracts/contracts/token/erc1155"
-	"github.com/bestchains/bestchains-contracts/library/context"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 func main() {
-	nonceContract := new(nonce.Nonce)
-	nonceContract.Name = "org.bestchains.com.NonceContract"
-	nonceContract.TransactionContextHandler = new(context.Context)
-	nonceContract.BeforeTransaction = context.BeforeTransaction
-
-	erc1155Contract := erc1155.NewERC1155(nonceContract)
-	erc1155Contract.Name = "org.bestchains.com.ERC1155Contract"
-	erc1155Contract.TransactionContextHandler = new(context.Context)
-	erc1155Contract.BeforeTransaction = context.BeforeTransaction
+	erc1155Contract := erc1155.NewERC1155(nonce.NewNonceContract())
 
 	cc, err := contractapi.NewChaincode(erc1155Contract)
 	if err != nil {

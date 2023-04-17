@@ -52,10 +52,10 @@ func NewAccessControlContract(ownable IOwnable) *AccessControlContract {
 	return accessControl
 }
 
-func (accessControl *AccessControlContract) Initialize(ctx context.ContextInterface, initOwner string) error {
+func (accessControl *AccessControlContract) Initialize(ctx context.ContextInterface) error {
 	var err error
 
-	if err = accessControl.IOwnable.Initialize(ctx, initOwner); err != nil {
+	if err = accessControl.IOwnable.Initialize(ctx); err != nil {
 		return errors.Wrap(err, "AccessControl: initialize")
 	}
 
@@ -69,6 +69,10 @@ func (accessControl *AccessControlContract) SetRoleAdmin(ctx context.ContextInte
 
 	if string(role) == "" || string(adminRole) == "" {
 		return errors.New("AccessControl: role and adminRole must not be empty")
+	}
+
+	if string(role) == string(adminRole) {
+		return errors.New("")
 	}
 
 	if err = onlyOwner(ctx); err != nil {

@@ -19,6 +19,7 @@ package erc1155
 import (
 	"errors"
 
+	"github.com/bestchains/bestchains-contracts/contracts/nonce"
 	"github.com/bestchains/bestchains-contracts/library"
 	"github.com/bestchains/bestchains-contracts/library/context"
 )
@@ -71,6 +72,8 @@ type EventURI struct {
 }
 
 type IERC1155 interface {
+	nonce.INonce
+
 	SetURI(ctx context.ContextInterface, id ID, uri string) error
 	URI(ctx context.ContextInterface, id ID) (string, error)
 

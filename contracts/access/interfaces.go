@@ -29,7 +29,7 @@ type EventOwnershipTransferred struct {
 
 // IOwnable defines the interfaces which ownable contract must implement
 type IOwnable interface {
-	Initialize(ctx context.ContextInterface, owner string) error
+	Initialize(ctx context.ContextInterface) error
 	Owner(ctx context.ContextInterface) (string, error)
 	RenounceOwnership(ctx context.ContextInterface) error
 	TransferOwnership(ctx context.ContextInterface, newOwner string) error
@@ -58,6 +58,8 @@ type EventRoleRevoked struct {
 
 // IAccessControl defines the interfaces which access control contract must implement
 type IAccessControl interface {
+	IOwnable
+	Initialize(ctx context.ContextInterface) error
 	SetRoleAdmin(ctx context.ContextInterface, role []byte, adminRole []byte) error
 	GetRoleAdmin(ctx context.ContextInterface, role []byte) ([]byte, error)
 	HasRole(ctx context.ContextInterface, role []byte, account string) (bool, error)
