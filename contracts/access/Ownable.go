@@ -32,7 +32,7 @@ const (
 
 var _ IOwnable = new(OwnableContract)
 
-// OwnableContract implements IOwnable which provides basic access control mechanism where there is a owner can be granted exclusive access to spcific functions.
+// OwnableContract implements IOwnable which provides basic access control mechanism where there is an owner can be granted exclusive access to specific functions.
 type OwnableContract struct {
 	contractapi.Contract
 	initializable *initializable.Initializable
@@ -66,7 +66,7 @@ func (ownable *OwnableContract) Initialize(ctx context.ContextInterface) error {
 }
 
 // Owner returns the address of the current owner
-// - ZeroAddress will returned if current owner is empty
+// - ZeroAddress will be returned if current owner is empty
 func (ownable *OwnableContract) Owner(ctx context.ContextInterface) (string, error) {
 	currOwner, err := owner(ctx)
 	if err != nil {

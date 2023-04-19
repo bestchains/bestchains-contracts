@@ -5,7 +5,111 @@
     "from": "Bestchains Team",
     "description": "Provide basic key-value storage(Simply Put/Get/Total) with optimized key id auto-calculation.",
     "package": "example/basic",
-    "status": "DONE"
+    "status": "DONE",
+    "interfaces": [
+      {
+        "name": "GetRoleAdmin",
+        "args":["string role"],
+        "condition":"none",
+        "description": "returns admin that manages role"
+      },
+      {
+        "name": "GrantRole",
+        "args":["string role", "string account"],
+        "condition":"admin role only",
+        "description": "grants role to account"
+      },
+      {
+        "name": "HasRole",
+        "args":["string role", "string account"],
+        "condition":"none",
+        "description": "queries if the account has the role"
+      },
+      {
+        "name": "Initialize",
+        "args":[""],
+        "condition":"none",
+        "description": "initialize the contract"
+      },
+      {
+        "name": "Owner",
+        "args":[""],
+        "condition":"none",
+        "description": "returns the contract owner's address"
+      },
+      {
+        "name": "RenounceOwnership",
+        "args":[""],
+        "condition":"contract owner only",
+        "description": "renounces the contract owner to zeroAddress"
+      },
+      {
+        "name": "RenounceRole",
+        "args":["string role", "string account"],
+        "condition":"none",
+        "description": "renounces the account's own role"
+      },
+      {
+        "name": "RevokeRole",
+        "args":["string role", "string account"],
+        "condition":"admin role only",
+        "description": "revokes account's role"
+      },
+      {
+        "name": "SetRoleAdmin",
+        "args":["string role","string adminRole"],
+        "condition":"contract owner only",
+        "description": "sets the admin role"
+      },
+      {
+        "name": "TransferOwnership",
+        "args":["string newOwner"],
+        "condition":"contract owner only",
+        "description": "transfers contracts ownership to newOwner"
+      },
+      {
+        "name": "Check",
+        "args":["string account", "uint64 dstNonce"],
+        "condition":"none",
+        "description": "checks if account's nonce is equal to dstNonce"
+      },
+      {
+        "name": "Current",
+        "args":["string account"],
+        "condition":"none",
+        "description": "returns the account's current nonce"
+      },
+      {
+        "name": "Increment",
+        "args":["string account"],
+        "condition":"none",
+        "description": "increase account's nonce by 1"
+      },
+      {
+        "name": "GetValueByIndex",
+        "args":["string index"],
+        "condition":"none",
+        "description": "queries deposit value by index"
+      },
+      {
+        "name": "GetValueByKID",
+        "args":["string kid"],
+        "condition":"无",
+        "description": "queries deposit value by key"
+      },
+      {
+        "name": "PutValue",
+        "args":["string val"],
+        "condition":"client role only",
+        "description": "generates and saves deposit"
+      },
+      {
+        "name": "Total",
+        "args":[""],
+        "condition":"none",
+        "description": "returns total number of deposits"
+      }
+    ]
   },
   {
     "name": "AcccessControl",
@@ -13,7 +117,69 @@
     "from": "Bestchains Team",
     "description": "Provide role-based access control",
     "package": "example/acl",
-    "status": "DONE"
+    "status": "DONE",
+    "interfaces": [
+      {
+        "name": "GetRoleAdmin",
+        "args":["string role"],
+        "condition":"none",
+        "description": "returns admin that manages role"
+      },
+      {
+        "name": "GrantRole",
+        "args":["string role", "string account"],
+        "condition":"admin role only",
+        "description": "grants role to account"
+      },
+      {
+        "name": "HasRole",
+        "args":["string role", "string account"],
+        "condition":"none",
+        "description": "queries if the account has the role"
+      },
+      {
+        "name": "Initialize",
+        "args":[""],
+        "condition":"none",
+        "description": "initialize the contract"
+      },
+      {
+        "name": "Owner",
+        "args":[""],
+        "condition":"none",
+        "description": "returns the contract owner's address"
+      },
+      {
+        "name": "RenounceOwnership",
+        "args":[""],
+        "condition":"contract owner only",
+        "description": "renounces the contract owner to zeroAddress"
+      },
+      {
+        "name": "RenounceRole",
+        "args":["string role", "string account"],
+        "condition":"none",
+        "description": "renounces the account's own role"
+      },
+      {
+        "name": "RevokeRole",
+        "args":["string role", "string account"],
+        "condition":"admin role only",
+        "description": "revokes account's role"
+      },
+      {
+        "name": "SetRoleAdmin",
+        "args":["string role","string adminRole"],
+        "condition":"contract owner only",
+        "description": "sets the admin role"
+      },
+      {
+        "name": "TransferOwnership",
+        "args":["string newOwner"],
+        "condition":"contract owner only",
+        "description": "transfers contracts ownership to newOwner"
+      }
+    ]
   },
   {
     "name": "Nonce",
@@ -21,7 +187,27 @@
     "from": "Bestchains Team",
     "description": "Provide account nonce management",
     "package": "example/nonce",
-    "status": "DONE"
+    "status": "DONE",
+    "interfaces": [
+      {
+        "name": "Check",
+        "args":["string account", "uint64 dstNonce"],
+        "condition":"none",
+        "description": "checks if account's nonce is equal to dstNonce"
+      },
+      {
+        "name": "Current",
+        "args":["string account"],
+        "condition":"none",
+        "description": "returns the account's current nonce"
+      },
+      {
+        "name": "Increment",
+        "args":["string account"],
+        "condition":"none",
+        "description": "increase account's nonce by 1"
+      }
+    ]
   },
   {
     "name": "Timelock",
@@ -29,14 +215,42 @@
     "from": "Bestchains Team",
     "description": "Provide a basic exmaple for Timelock library usage",
     "package": "example/timelock",
-    "status": "DONE"
+    "status": "DONE",
+    "interfaces": [
+      {
+        "name": "Execute",
+        "args":["string opHash"],
+        "condition":"none",
+        "description": "executes operation with hash opHash"
+      },
+      {
+        "name": "GetValue",
+        "args":["string key"],
+        "condition":"none",
+        "description": "queries value with key"
+      },
+      {
+        "name": "Schedule",
+        "args":["string key", "string value", "uint64 duration"],
+        "condition":"none",
+        "description": "generates operation of storing key-value pair, sets a time lock that releases after duration time"
+      }
+    ]
   },
   {
     "name": "ERC1155",
     "version": "v0.0.1",
     "from": "Bestchains Team",
-    "description": "Provide a erc1155 implementation on hypleredger fabric",
+    "description": "Provide a erc1155 implementation on hyperledger fabric",
     "package": "example/erc1155",
+    "status": "WIP"
+  },
+  {
+    "name": "ERC20",
+    "version": "v0.0.1",
+    "from": "Bestchains Team",
+    "description": "Provide a erc20 implementation on hyperledger fabric",
+    "package": "example/erc20",
     "status": "WIP"
   }
 ]

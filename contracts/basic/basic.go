@@ -74,7 +74,7 @@ func (bc *BasicContract) onlyRole(ctx context.ContextInterface, role []byte) err
 	return nil
 }
 
-// Initialize the contract by setting transactin operator as owner
+// Initialize the contract by setting transaction operator as owner
 func (bc *BasicContract) Initialize(ctx context.ContextInterface) error {
 	err := bc.IAccessControl.Initialize(ctx)
 	if err != nil {
@@ -152,7 +152,7 @@ func (bc *BasicContract) PutValue(ctx context.ContextInterface, msg context.Mess
 		KID:   kid,
 	})
 	if err != nil {
-		return "", errors.Wrap(err, "Basic: faield to emit EventPutValue")
+		return "", errors.Wrap(err, "Basic: failed to emit EventPutValue")
 	}
 
 	return kid, nil
