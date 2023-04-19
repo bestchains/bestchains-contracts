@@ -32,6 +32,8 @@ const (
 	IndexerKey  = "basic~index"
 	BasicKey    = "basic~index~kid"
 	BasicValKey = "basic~kid-val"
+
+	EnableACLKey = "enable~acl"
 )
 
 var (
@@ -80,7 +82,34 @@ func (bc *BasicContract) Initialize(ctx context.ContextInterface) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
+}
+
+func (bc *BasicContract) EnableACL(ctx context.ContextInterface) error {
+	err := ctx.GetStub().PutState(EnableACLKey, library.True.Bytes())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bc *BasicContract) DisableACL(ctx context.ContextInterface) error {
+	err := ctx.GetStub().PutState(EnableACLKey, library.False.Bytes())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bc *BasicContract) aclEnabled(ctx context.ContextInterface) (bool, error) {
+	val, err := ctx.GetStub().GetState(EnableACLKey)
+	if err != nil {
+		return false, err
+	}
+
+	return library.BytesToBool(val).Bool(), nil
+
 }
 
 // Total key-value paris stored
@@ -96,12 +125,16 @@ func (bc *BasicContract) Total(ctx context.ContextInterface) (uint64, error) {
 func (bc *BasicContract) PutValue(ctx context.ContextInterface, msg context.Message, val string) (string, error) {
 	var err error
 
-	// check msg sender has this permission
-	if err = bc.onlyRole(ctx, RoleClient[:]); err != nil {
-		return "", errors.Wrap(err, "onlyClient")
+	// check acl if enabled
+	enabled, err := bc.aclEnabled(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "BasicContract: get aclEnabled")
 	}
-
-	// TODO: Gas calculation
+	if enabled {
+		if err = bc.onlyRole(ctx, RoleClient[:]); err != nil {
+			return "", errors.Wrap(err, "onlyClient")
+		}
+	}
 
 	// increase nonce
 	if err = bc.INonce.Check(ctx, ctx.MsgSender().String(), msg.Nonce); err != nil {
@@ -111,6 +144,7 @@ func (bc *BasicContract) PutValue(ctx context.ContextInterface, msg context.Mess
 		return "", err
 	}
 
+	// put value into database
 	if val == "" {
 		return "", errors.New("empty input value")
 	}
