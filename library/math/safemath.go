@@ -16,4 +16,42 @@ limitations under the License.
 
 package math
 
-// TO BE DEFINED
+func TryAdd(a uint64, b uint64) (bool, uint64) {
+	c := a + b
+	if c < a {
+		return false, 0
+	}
+	return true, c
+}
+
+func TrySub(a uint64, b uint64) (bool, uint64) {
+	if b > a {
+		return false, 0
+	}
+	return true, a - b
+}
+
+func TryMul(a uint64, b uint64) (bool, uint64) {
+	if a == 0 {
+		return true, 0
+	}
+	c := a * b
+	if c/a != b {
+		return false, 0
+	}
+	return true, c
+}
+
+func TryDiv(a uint64, b uint64) (bool, uint64) {
+	if b == 0 {
+		return false, 0
+	}
+	return true, a / b
+}
+
+func TryMod(a uint64, b uint64) (bool, uint64) {
+	if b == 0 {
+		return false, 0
+	}
+	return true, a % b
+}
