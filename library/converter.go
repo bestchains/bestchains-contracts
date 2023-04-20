@@ -61,3 +61,15 @@ func BytesToUint8(input []byte) (uint8, error) {
 	}
 	return uint8(ui8), nil
 }
+
+func BytesToBool(input []byte) Bool {
+	if input == nil {
+		return False
+	}
+
+	if string(input) == True.String() {
+		return True
+	}
+
+	return False
+}

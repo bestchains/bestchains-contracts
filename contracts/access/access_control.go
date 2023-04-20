@@ -18,6 +18,7 @@ package access
 
 import (
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/bestchains/bestchains-contracts/library"
 	"github.com/bestchains/bestchains-contracts/library/context"
@@ -25,11 +26,18 @@ import (
 )
 
 const (
+	SuperAdminRole = "super~admin~role"
+
 	RoleAdminPrefix = "role~admin"
 	RolePrefix      = "role~account"
+)
 
-	True  = "true"
-	False = "false"
+var (
+	HashedSuperAdminRole = sha3.Sum256([]byte(SuperAdminRole))
+)
+
+var (
+	ErrRoleNotFound = errors.New("role not found")
 )
 
 var _ IAccessControl = new(AccessControlContract)
@@ -59,10 +67,15 @@ func (accessControl *AccessControlContract) Initialize(ctx context.ContextInterf
 		return errors.Wrap(err, "AccessControl: initialize")
 	}
 
+	if err = grantRole(ctx, HashedSuperAdminRole[:], ctx.Operator().String()); err != nil {
+		return errors.Wrap(err, "AccessControl: grant default role to operator")
+	}
+
 	return nil
 }
 
 // SetRoleAdmin only when operator is the owner
+// - only default role
 // - emit event `RoleAdminChanged`
 func (accessControl *AccessControlContract) SetRoleAdmin(ctx context.ContextInterface, role []byte, adminRole []byte) error {
 	var err error
@@ -72,19 +85,20 @@ func (accessControl *AccessControlContract) SetRoleAdmin(ctx context.ContextInte
 	}
 
 	if string(role) == string(adminRole) {
-		return errors.New("")
+		return errors.New("role and adminRole must not be the same")
 	}
 
-	if err = onlyOwner(ctx); err != nil {
-		return errors.Wrap(err, "AccessControl: onlyOwner")
+	// only default role
+	if err = hasRole(ctx, HashedSuperAdminRole[:], ctx.Operator()); err != nil {
+		return errors.Wrap(err, "AccessControl: only default admin role")
 	}
 
-	roleAdminKey, err := ctx.GetStub().CreateCompositeKey(RoleAdminPrefix, []string{string(role)})
+	previousAdminRole, err := getRoleAdmin(ctx, role)
 	if err != nil {
 		return errors.Wrap(err, "AccessControl: create role's composite key")
 	}
 
-	previousAdminRole, err := ctx.GetStub().GetState(roleAdminKey)
+	roleAdminKey, err := ctx.GetStub().CreateCompositeKey(RoleAdminPrefix, []string{string(role)})
 	if err != nil {
 		return errors.Wrap(err, "AccessControl: create role's composite key")
 	}
@@ -118,6 +132,10 @@ func getRoleAdmin(ctx context.ContextInterface, role []byte) ([]byte, error) {
 	val, err := ctx.GetStub().GetState(roleAdminKey)
 	if err != nil {
 		return nil, err
+	}
+
+	if val == nil {
+		return []byte{}, nil
 	}
 
 	return val, nil
@@ -155,7 +173,11 @@ func hasRole(ctx context.ContextInterface, role []byte, account library.Address)
 		return err
 	}
 
-	if string(val) != True {
+	if val == nil {
+		return ErrRoleNotFound
+	}
+
+	if !library.BytesToBool(val).Bool() {
 		return errors.Errorf("AccessingControl: account %s is missing role %s", account, library.BytesToHexString(role))
 	}
 
@@ -175,13 +197,8 @@ func (accessControl *AccessControlContract) GrantRole(ctx context.ContextInterfa
 		return errors.Wrap(err, "AccessControl: onlyRoleAdmin")
 	}
 
-	roleKey, err := ctx.GetStub().CreateCompositeKey(RolePrefix, []string{string(role), account})
-	if err != nil {
-		return err
-	}
-
-	if err = ctx.GetStub().PutState(roleKey, []byte(True)); err != nil {
-		return err
+	if err = grantRole(ctx, role, account); err != nil {
+		return errors.Wrap(err, "AccessControl: grantRole")
 	}
 
 	if err = ctx.EmitEvent("RoleGranted", &EventRoleGranted{
@@ -190,6 +207,19 @@ func (accessControl *AccessControlContract) GrantRole(ctx context.ContextInterfa
 		Sender:  ctx.Operator(),
 	}); err != nil {
 		return errors.Wrap(err, "AccessControl: event")
+	}
+
+	return nil
+}
+
+func grantRole(ctx context.ContextInterface, role []byte, account string) error {
+	roleKey, err := ctx.GetStub().CreateCompositeKey(RolePrefix, []string{string(role), account})
+	if err != nil {
+		return err
+	}
+
+	if err = ctx.GetStub().PutState(roleKey, library.True.Bytes()); err != nil {
+		return err
 	}
 
 	return nil
