@@ -33,7 +33,7 @@ import (
 
 var (
 	profile  = flag.String("profile", "./network.json", "profile to connect with blockchain network")
-	contract = flag.String("contract", "basic", "contract name")
+	contract = flag.String("contract", "depository", "contract name")
 	method   = flag.String("method", "org.hyperledger.fabric:GetMetadata", "contract method")
 	args     = new(utils.SliceArgs)
 )

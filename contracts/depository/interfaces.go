@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package basic
+package depository
 
 import (
 	"github.com/bestchains/bestchains-contracts/contracts/access"
@@ -27,12 +27,16 @@ type EventPutValue struct {
 	KID   string
 }
 
-// IBasic provides common data Put/Get
-type IBasic interface {
+// IDepository provides digital depository interfaces
+type IDepository interface {
 	nonce.INonce
 	access.IAccessControl
 	// Initialize the contract
 	Initialize(ctx context.ContextInterface) error
+	// EnableACL enable acl in Depository
+	EnableACL(ctx context.ContextInterface) error
+	// DisableACL disable acl in Depository
+	DisableACL(ctx context.ContextInterface) error
 	// Total k/v paris stored
 	Total(ctx context.ContextInterface) (uint64, error)
 	// PutValue stores kval with pre-defined key calculation
