@@ -21,6 +21,7 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/bestchains/bestchains-contracts/library"
@@ -43,8 +44,8 @@ const (
 
 type Message struct {
 	Nonce     uint64 `json:"nonce"`
-	PublicKey []byte `json:"publicKey"`
-	Signature []byte `json:"signature"`
+	PublicKey string `json:"publicKey"`
+	Signature string `json:"signature"`
 }
 
 func (msg *Message) Marshal() ([]byte, error) {
@@ -69,7 +70,12 @@ func (msg *Message) Unmarshal(bytes []byte) error {
 func (msg *Message) VerifyAgainstArgs(args ...string) (library.Address, error) {
 	payload := msg.GeneratePayload(args...)
 
-	pub, err := x509.ParsePKIXPublicKey(msg.PublicKey)
+	// parse public key from message
+	rawPubKey, err := base64.StdEncoding.DecodeString(msg.PublicKey)
+	if err != nil {
+		return library.ZeroAddress, err
+	}
+	pub, err := x509.ParsePKIXPublicKey(rawPubKey)
 	if err != nil {
 		return library.ZeroAddress, errors.Wrap(ErrInvalidMessage, err.Error())
 	}
@@ -79,10 +85,17 @@ func (msg *Message) VerifyAgainstArgs(args ...string) (library.Address, error) {
 		return library.ZeroAddress, err
 	}
 
+	// parse signature from message
+	rawSignature, err := base64.StdEncoding.DecodeString(msg.Signature)
+	if err != nil {
+		return library.ZeroAddress, err
+	}
+
+	// verify signature from message
 	switch pub := pub.(type) {
 	case *ecdsa.PublicKey:
 		hashedPayload := GenerateHash(payload)
-		if !ecdsa.VerifyASN1(pub, hashedPayload, msg.Signature) {
+		if !ecdsa.VerifyASN1(pub, hashedPayload, rawSignature) {
 			return library.ZeroAddress, errors.Wrap(ErrInvalidMessage, ErrInvalidSignature.Error())
 		}
 	default:
@@ -98,13 +111,13 @@ func (msg *Message) GenerateSignature(privkey *ecdsa.PrivateKey, args ...string)
 	if err != nil {
 		return err
 	}
-	msg.Signature = signature
+	msg.Signature = base64.StdEncoding.EncodeToString(signature)
 
 	pubBytes, err := x509.MarshalPKIXPublicKey(&privkey.PublicKey)
 	if err != nil {
 		return err
 	}
-	msg.PublicKey = pubBytes
+	msg.PublicKey = base64.StdEncoding.EncodeToString(pubBytes)
 
 	return nil
 }
