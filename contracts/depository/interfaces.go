@@ -22,6 +22,11 @@ import (
 	"github.com/bestchains/bestchains-contracts/library/context"
 )
 
+type EventPutUntrustValue struct {
+	Index uint64
+	KID   string
+}
+
 type EventPutValue struct {
 	Index uint64
 	KID   string
@@ -39,6 +44,8 @@ type IDepository interface {
 	DisableACL(ctx context.ContextInterface) error
 	// Total k/v paris stored
 	Total(ctx context.ContextInterface) (uint64, error)
+	// PutUntrustValue stores kval which do not have real owner's signature
+	PutUntrustValue(ctx context.ContextInterface, val string) (string, error)
 	// PutValue stores kval with pre-defined key calculation
 	PutValue(ctx context.ContextInterface, msg context.Message, val string) (string, error)
 	// GetValueByIndex get kval with index

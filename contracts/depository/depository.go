@@ -170,6 +170,36 @@ func (bc *DepositoryContract) Total(ctx context.ContextInterface) (uint64, error
 }
 
 /*
+GetValueByKID retrieves the value associated with the given KID.
+
+Args:
+- ctx (context.ContextInterface): The context interface.
+- kid (string): The KID to retrieve the value for.
+
+Returns:
+- (string): The value associated with the given KID.
+- (error): An error if the value could not be retrieved.
+*/
+func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val string) (string, error) {
+	// put value into ledger
+	index, kid, err := putValue(ctx, val)
+	if err != nil {
+		return "", err
+	}
+
+	// emit event PutValue
+	err = ctx.EmitEvent("PutUntrustValue", &EventPutUntrustValue{
+		Index: index,
+		KID:   kid,
+	})
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to emit EventPutValue")
+	}
+
+	return kid, nil
+}
+
+/*
 PutValue puts a new value into the depository. It takes a context interface, a message, and a string value as input.
 It returns the key ID of the value and an error.
 
@@ -204,45 +234,15 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 		return "", err
 	}
 
-	// put value into database
-	if val == "" {
-		return "", errors.New("empty input value")
-	}
-	curr, err := currentCounter(ctx)
+	// put value into ledger
+	index, kid, err := putValue(ctx, val)
 	if err != nil {
-		return "", errors.Wrap(err, "Depository: failed to get counter")
+		return "", err
 	}
 
-	kid := calculateKID(curr, []byte(val))
-
-	// save key id
-	depositoryKey, err := ctx.GetStub().CreateCompositeKey(DepositoryKey, []string{curr.String()})
-	if err != nil {
-		return "", errors.Wrap(err, "Depository: invalid composite DepositoryKey")
-	}
-	err = ctx.GetStub().PutState(depositoryKey, []byte(kid))
-	if err != nil {
-		return "", errors.Wrap(err, "Depository: failed to put DepositoryKey")
-	}
-
-	// save value
-	depositoryValKey, err := ctx.GetStub().CreateCompositeKey(DepositoryValKey, []string{kid})
-	if err != nil {
-		return "", errors.Wrap(err, "Depository: invalid composite DepositoryValKey")
-	}
-	err = ctx.GetStub().PutState(depositoryValKey, []byte(val))
-	if err != nil {
-		return "", errors.Wrap(err, "Depository: failed to put DepositoryKey")
-	}
-
-	// increase counter
-	err = incrementCounter(ctx)
-	if err != nil {
-		return "", errors.Wrap(err, "Depository: failed to increase counter")
-	}
-
+	// emit event PutValue
 	err = ctx.EmitEvent("PutValue", &EventPutValue{
-		Index: curr.Current(),
+		Index: index,
 		KID:   kid,
 	})
 	if err != nil {
@@ -250,6 +250,48 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 	}
 
 	return kid, nil
+}
+
+func putValue(ctx context.ContextInterface, val string) (uint64, string, error) {
+
+	// put value into database
+	if val == "" {
+		return 0, "", errors.New("empty input value")
+	}
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: failed to get counter")
+	}
+
+	kid := calculateKID(curr, []byte(val))
+
+	// save key id
+	depositoryKey, err := ctx.GetStub().CreateCompositeKey(DepositoryKey, []string{curr.String()})
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: invalid composite DepositoryKey")
+	}
+	err = ctx.GetStub().PutState(depositoryKey, []byte(kid))
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: failed to put DepositoryKey")
+	}
+
+	// save value
+	depositoryValKey, err := ctx.GetStub().CreateCompositeKey(DepositoryValKey, []string{kid})
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: invalid composite DepositoryValKey")
+	}
+	err = ctx.GetStub().PutState(depositoryValKey, []byte(val))
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: failed to put DepositoryKey")
+	}
+
+	// increase counter
+	err = incrementCounter(ctx)
+	if err != nil {
+		return 0, "", errors.Wrap(err, "Depository: failed to increase counter")
+	}
+
+	return curr.Current(), kid, nil
 }
 
 func calculateKID(counter *library.Counter, val []byte) string {
