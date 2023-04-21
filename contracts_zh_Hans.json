@@ -1,12 +1,42 @@
 [
   {
-    "name": "存证合约",
+    "name": "Depository",
     "version": "v0.0.1",
     "from": "Bestchains Team",
-    "description": "提供存证应用的基础功能,通用的Key-Value存储",
-    "package": "example/basic",
+    "description": "提供存证应用的接口",
+    "package": "example/depository",
     "status": "已完成",
     "interfaces": [
+      {
+        "name": "Initialize",
+        "args":[""],
+        "condition":"无",
+        "description": "用于初始化合约"
+      },
+      {
+        "name": "GetValueByIndex",
+        "args":["string index"],
+        "condition":"无",
+        "description": "基于存证索引(index)查询存证"
+      },
+      {
+        "name": "GetValueByKID",
+        "args":["string kid"],
+        "condition":"无",
+        "description": "基于存证key id查询存证"
+      },
+      {
+        "name": "PutValue",
+        "args":["string val"],
+        "condition":"仅允许合约 client 角色使用",
+        "description": "用于生成存证"
+      },
+      {
+        "name": "Total",
+        "args":[""],
+        "condition":"无",
+        "description": "用于获取存证总数"
+      },
       {
         "name": "Check",
         "args":["string account", "uint64 dstNonce"],
@@ -24,95 +54,11 @@
         "args":["string account"],
         "condition":"无",
         "description": "用于使 account 的 nonce 值自增 1"
-      },
-      {
-        "name": "GetRoleAdmin",
-        "args":["string role"],
-        "condition":"无",
-        "description": "获取管理 role 角色的 admin"
-      },
-      {
-        "name": "GrantRole",
-        "args":["string role", "string account"],
-        "condition":"仅允许合约 admin 角色使用",
-        "description": "用于为 account 授予 role 角色"
-      },
-      {
-        "name": "HasRole",
-        "args":["string role", "string account"],
-        "condition":"无",
-        "description": "用于查询 account 是否拥有 role 角色"
-      },
-      {
-        "name": "Initialize",
-        "args":[""],
-        "condition":"无",
-        "description": "用于初始化合约"
-      },
-      {
-        "name": "Owner",
-        "args":[""],
-        "condition":"无",
-        "description": "用于查询合约的 owner 地址"
-      },
-      {
-        "name": "RenounceOwnership",
-        "args":[""],
-        "condition":"仅允许合约 owner 使用",
-        "description": "用于重置合约 owner 至零地址"
-      },
-      {
-        "name": "RenounceRole",
-        "args":["string role", "string account"],
-        "condition":"无",
-        "description": "用于取消自身的 role 角色"
-      },
-      {
-        "name": "RevokeRole",
-        "args":["string role", "string account"],
-        "condition":"仅允许合约 admin 角色使用",
-        "description": "用于取消 account 的 role 角色"
-      },
-      {
-        "name": "SetRoleAdmin",
-        "args":["string role","string adminRole"],
-        "condition":"仅允许合约 owner 使用",
-        "description": "用于修改角色管理者"
-      },
-      {
-        "name": "TransferOwnership",
-        "args":["string newOwner"],
-        "condition":"仅允许合约 owner 使用",
-        "description": "用于将合约 owner 转移给 newOwner"
-      },
-      {
-        "name": "GetValueByIndex",
-        "args":["string index"],
-        "condition":"无",
-        "description": "基于存证索引查询存证"
-      },
-      {
-        "name": "GetValueByKID",
-        "args":["string kid"],
-        "condition":"无",
-        "description": "基于存证 key 查询存证"
-      },
-      {
-        "name": "PutValue",
-        "args":["string val"],
-        "condition":"仅允许合约 client 角色使用",
-        "description": "用于生成存证"
-      },
-      {
-        "name": "Total",
-        "args":[""],
-        "condition":"无",
-        "description": "用于获取存证总数"
       }
     ]
   },
   {
-    "name": "访问控制合约",
+    "name": "AccessControl",
     "version": "v0.0.1",
     "from": "Bestchains Team",
     "description": "提供基于角色的访问控制",
@@ -182,7 +128,7 @@
     ]
   },
   {
-    "name": "账户Nonce管理",
+    "name": "Nonce",
     "version": "v0.0.1",
     "from": "Bestchains Team",
     "description": "提供类以太坊账户Nonce值的视线",
@@ -210,7 +156,7 @@
     ]
   },
   {
-    "name": "时间锁合约",
+    "name": "Timelock",
     "version": "v0.0.1",
     "from": "Bestchains Team",
     "description": "提供时间锁合约,用于实现操作延时执行",
@@ -238,7 +184,7 @@
     ]
   },
   {
-    "name": "NFT合约",
+    "name": "ERC1155",
     "version": "v0.0.1",
     "from": "Bestchains Team",
     "description": "基于ERC1155协议实现的NFT合约",
@@ -246,7 +192,7 @@
     "status": "进行中"
   },
   {
-    "name": "同质化代币合约",
+    "name": "ERC20",
     "version": "v0.0.1",
     "from": "Bestchains Team",
     "description": "基于ERC20协议实现的同质化代币合约",

@@ -1,30 +1,12 @@
 [
   {
-    "name": "Basic",
+    "name": "Depository",
     "version": "v0.0.1",
     "from": "Bestchains Team",
-    "description": "Provide basic key-value storage(Simply Put/Get/Total) with optimized key id auto-calculation.",
-    "package": "example/basic",
+    "description": "Provide depository contract with optimized depository key id auto-calculation.",
+    "package": "example/depository",
     "status": "DONE",
     "interfaces": [
-      {
-        "name": "GetRoleAdmin",
-        "args":["string role"],
-        "condition":"none",
-        "description": "returns admin that manages role"
-      },
-      {
-        "name": "GrantRole",
-        "args":["string role", "string account"],
-        "condition":"admin role only",
-        "description": "grants role to account"
-      },
-      {
-        "name": "HasRole",
-        "args":["string role", "string account"],
-        "condition":"none",
-        "description": "queries if the account has the role"
-      },
       {
         "name": "Initialize",
         "args":[""],
@@ -32,40 +14,40 @@
         "description": "initialize the contract"
       },
       {
-        "name": "Owner",
+        "name": "EnableACL",
+        "args":[],
+        "condition":"none",
+        "description": "enable access control in Depository(disabled by default)"
+      },
+      {
+        "name": "DisableACL",
+        "args":[],
+        "condition":"none",
+        "description": "disable access control in Depository(disabled by default)"
+      },
+      {
+        "name": "GetValueByIndex",
+        "args":["string index"],
+        "condition":"none",
+        "description": "queries deposit value by index"
+      },
+      {
+        "name": "GetValueByKID",
+        "args":["string kid"],
+        "condition":"none",
+        "description": "queries deposit value by key"
+      },
+      {
+        "name": "PutValue",
+        "args":["string val"],
+        "condition":"client role only",
+        "description": "generates and saves deposit"
+      },
+      {
+        "name": "Total",
         "args":[""],
         "condition":"none",
-        "description": "returns the contract owner's address"
-      },
-      {
-        "name": "RenounceOwnership",
-        "args":[""],
-        "condition":"contract owner only",
-        "description": "renounces the contract owner to zeroAddress"
-      },
-      {
-        "name": "RenounceRole",
-        "args":["string role", "string account"],
-        "condition":"none",
-        "description": "renounces the account's own role"
-      },
-      {
-        "name": "RevokeRole",
-        "args":["string role", "string account"],
-        "condition":"admin role only",
-        "description": "revokes account's role"
-      },
-      {
-        "name": "SetRoleAdmin",
-        "args":["string role","string adminRole"],
-        "condition":"contract owner only",
-        "description": "sets the admin role"
-      },
-      {
-        "name": "TransferOwnership",
-        "args":["string newOwner"],
-        "condition":"contract owner only",
-        "description": "transfers contracts ownership to newOwner"
+        "description": "returns total number of deposits"
       },
       {
         "name": "Check",
@@ -84,30 +66,6 @@
         "args":["string account"],
         "condition":"none",
         "description": "increase account's nonce by 1"
-      },
-      {
-        "name": "GetValueByIndex",
-        "args":["string index"],
-        "condition":"none",
-        "description": "queries deposit value by index"
-      },
-      {
-        "name": "GetValueByKID",
-        "args":["string kid"],
-        "condition":"无",
-        "description": "queries deposit value by key"
-      },
-      {
-        "name": "PutValue",
-        "args":["string val"],
-        "condition":"client role only",
-        "description": "generates and saves deposit"
-      },
-      {
-        "name": "Total",
-        "args":[""],
-        "condition":"none",
-        "description": "returns total number of deposits"
       }
     ]
   },

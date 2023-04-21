@@ -18,19 +18,19 @@ package main
 
 import (
 	"github.com/bestchains/bestchains-contracts/contracts/access"
-	"github.com/bestchains/bestchains-contracts/contracts/basic"
+	"github.com/bestchains/bestchains-contracts/contracts/depository"
 	"github.com/bestchains/bestchains-contracts/contracts/nonce"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 func main() {
-	basicContract := basic.NewBasicContract(
+	depositoryContract := depository.NewDepositoryContract(
 		nonce.NewNonceContract(),
 		access.NewAccessControlContract(
 			access.NewOwnableContract(),
 		),
 	)
-	cc, err := contractapi.NewChaincode(basicContract)
+	cc, err := contractapi.NewChaincode(depositoryContract)
 	if err != nil {
 		panic(err.Error())
 	}
