@@ -187,13 +187,15 @@ func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val 
 		return "", err
 	}
 
-	// emit event PutValue
+	// emit event PutUntrustValue
 	err = ctx.EmitEvent("PutUntrustValue", &EventPutUntrustValue{
-		Index: index,
-		KID:   kid,
+		Index:    index,
+		KID:      kid,
+		Operator: ctx.Operator().String(),
+		Owner:    ctx.MsgSender().String(),
 	})
 	if err != nil {
-		return "", errors.Wrap(err, "Depository: failed to emit EventPutValue")
+		return "", errors.Wrap(err, "Depository: failed to emit EventPutUntrustValue")
 	}
 
 	return kid, nil
@@ -242,8 +244,10 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 
 	// emit event PutValue
 	err = ctx.EmitEvent("PutValue", &EventPutValue{
-		Index: index,
-		KID:   kid,
+		Index:    index,
+		KID:      kid,
+		Operator: ctx.Operator().String(),
+		Owner:    ctx.MsgSender().String(),
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to emit EventPutValue")
