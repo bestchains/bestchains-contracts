@@ -23,13 +23,17 @@ import (
 )
 
 type EventPutUntrustValue struct {
-	Index uint64
-	KID   string
+	Index    uint64
+	KID      string
+	Operator string
+	Owner    string
 }
 
 type EventPutValue struct {
-	Index uint64
-	KID   string
+	Index    uint64
+	KID      string
+	Operator string
+	Owner    string
 }
 
 // IDepository provides digital depository interfaces
