@@ -1,6 +1,6 @@
 module github.com/bestchains/bestchains-contracts
 
-go 1.18
+go 1.20
 
 require (
 	github.com/bestchains/bc-explorer v0.0.0-20230407072450-1b12e7688739
