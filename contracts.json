@@ -38,10 +38,28 @@
         "description": "queries deposit value by key"
       },
       {
+        "name": "BatchPutUntrustValue",
+        "args":["string batchValStr"],
+        "condition":"none",
+        "description": "generate depositories in a batch(without message signature)"
+      },
+      {
+        "name": "PutUntrustValue",
+        "args":["string val"],
+        "condition":"none",
+        "description": "generate depository(without message signature)"
+      },
+      {
+        "name": "BatchPutValue",
+        "args":["message msg","string batchValStr"],
+        "condition":"client role only(when ACL enabled)",
+        "description": "generate depositories in a batch"
+      },
+      {
         "name": "PutValue",
         "args":["string val"],
-        "condition":"client role only",
-        "description": "generates and saves deposit"
+        "condition":"client role only(when ACL enabled)",
+        "description": "generates and saves depository"
       },
       {
         "name": "Total",

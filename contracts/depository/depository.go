@@ -18,6 +18,7 @@ package depository
 
 import (
 	"encoding/hex"
+	"strings"
 
 	"github.com/bestchains/bestchains-contracts/contracts/access"
 	"github.com/bestchains/bestchains-contracts/contracts/nonce"
@@ -170,25 +171,97 @@ func (bc *DepositoryContract) Total(ctx context.ContextInterface) (uint64, error
 }
 
 /*
-GetValueByKID retrieves the value associated with the given KID.
+BatchPutUntrustValue put a list of values without second-class user's trusted signature
 
 Args:
 - ctx (context.ContextInterface): The context interface.
-- kid (string): The KID to retrieve the value for.
+- batchVals (string): The batched value string (joined by comma) to be stored in the depository.
+
+Returns:
+- (string): The valud kids joined by comma
+- (error): An error if the values cannot be stored
+*/
+func (bc *DepositoryContract) BatchPutUntrustValue(ctx context.ContextInterface, batchVals string) (string, error) {
+	// batchVals cannot be empty
+	if batchVals == "" {
+		return "", errors.New("empty batch value string")
+	}
+	vals := strings.Split(batchVals, ",")
+
+	// get current counter
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to get counter")
+	}
+
+	kids := make([]string, len(vals))
+	event := &EventBatchPutValue{
+		Total: uint64(len(vals)),
+		Items: make([]EventPutValue, len(vals)),
+	}
+
+	for i, val := range vals {
+		// put value into ledger
+		index, kid, err := putValue(ctx, curr, val)
+		if err != nil {
+			return "", err
+		}
+		kids[i] = kid
+		event.Items[i] = EventPutValue{
+			Index:    index,
+			KID:      kid,
+			Operator: ctx.Operator().String(),
+			Owner:    ctx.MsgSender().String(),
+		}
+	}
+
+	// increase counter
+	err = incrementCounter(ctx, uint64(len(vals)))
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to increase counter")
+	}
+
+	// emit event BatchPutUntrustValue
+	err = ctx.EmitEvent("BatchPutUntrustValue", event)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to emit event BatchPutUntrustValue")
+	}
+
+	return strings.Join(kids, ","), nil
+}
+
+/*
+PutUntrustValue put a value without second-class user's trusted signature
+
+Args:
+- ctx (context.ContextInterface): The context interface.
+- val (string): The value to be stored in the depository.
 
 Returns:
 - (string): The value associated with the given KID.
-- (error): An error if the value could not be retrieved.
+- (error): An error if the value could not be stored.
 */
 func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val string) (string, error) {
+	// get current counter
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to get counter")
+	}
+
 	// put value into ledger
-	index, kid, err := putValue(ctx, val)
+	index, kid, err := putValue(ctx, curr, val)
 	if err != nil {
 		return "", err
 	}
 
+	// increase counter
+	err = incrementCounter(ctx, 1)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to increase counter")
+	}
+
 	// emit event PutUntrustValue
-	err = ctx.EmitEvent("PutUntrustValue", &EventPutUntrustValue{
+	err = ctx.EmitEvent("PutUntrustValue", &EventPutValue{
 		Index:    index,
 		KID:      kid,
 		Operator: ctx.Operator().String(),
@@ -199,6 +272,86 @@ func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val 
 	}
 
 	return kid, nil
+}
+
+/*
+BatchPutValue put a list of values with second-class user's trusted signature
+
+Args:
+- ctx (context.ContextInterface): The context interface.
+- msg (context.Message): The message containing the transaction details.
+- batchVals (string): The batched value string (joined by comma) to be stored in the depository.
+
+Returns:
+- (string): The valud kids joined by comma
+- (error): An error if the values cannot be stored
+*/
+func (bc *DepositoryContract) BatchPutValue(ctx context.ContextInterface, msg context.Message, batchVals string) (string, error) {
+	// check acl if enabled
+	enabled, err := bc.aclEnabled(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "DepositoryContract: get aclEnabled")
+	}
+	if enabled {
+		if err = bc.onlyRole(ctx, RoleClient[:]); err != nil {
+			return "", errors.Wrap(err, "onlyClient")
+		}
+	}
+
+	// increase nonce
+	if err = bc.INonce.Check(ctx, ctx.MsgSender().String(), msg.Nonce); err != nil {
+		return "", err
+	}
+	if _, err = bc.INonce.Increment(ctx, ctx.MsgSender().String()); err != nil {
+		return "", err
+	}
+
+	// batchVals cannot be empty
+	if batchVals == "" {
+		return "", errors.New("empty batch value string")
+	}
+	vals := strings.Split(batchVals, ",")
+
+	// get current counter
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to get counter")
+	}
+
+	kids := make([]string, len(vals))
+	event := &EventBatchPutValue{
+		Total: uint64(len(vals)),
+		Items: make([]EventPutValue, len(vals)),
+	}
+
+	for i, val := range vals {
+		// put value into ledger
+		index, kid, err := putValue(ctx, curr, val)
+		if err != nil {
+			return "", err
+		}
+		kids[i] = kid
+		event.Items[i] = EventPutValue{
+			Index:    index,
+			KID:      kid,
+			Operator: ctx.Operator().String(),
+			Owner:    ctx.MsgSender().String(),
+		}
+	}
+
+	// increase counter
+	err = incrementCounter(ctx, uint64(len(vals)))
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to increase counter")
+	}
+
+	// emit event BatchPutUntrustValue
+	err = ctx.EmitEvent("BatchPutUntrustValue", event)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to emit event BatchPutUntrustValue")
+	}
+
+	return strings.Join(kids, ","), nil
 }
 
 /*
@@ -236,10 +389,22 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 		return "", err
 	}
 
+	// get current counter
+	curr, err := currentCounter(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to get counter")
+	}
+
 	// put value into ledger
-	index, kid, err := putValue(ctx, val)
+	index, kid, err := putValue(ctx, curr, val)
 	if err != nil {
 		return "", err
+	}
+
+	// increase counter
+	err = incrementCounter(ctx, 1)
+	if err != nil {
+		return "", errors.Wrap(err, "Depository: failed to increase counter")
 	}
 
 	// emit event PutValue
@@ -256,15 +421,10 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 	return kid, nil
 }
 
-func putValue(ctx context.ContextInterface, val string) (uint64, string, error) {
-
+func putValue(ctx context.ContextInterface, curr *library.Counter, val string) (uint64, string, error) {
 	// put value into database
 	if val == "" {
 		return 0, "", errors.New("empty input value")
-	}
-	curr, err := currentCounter(ctx)
-	if err != nil {
-		return 0, "", errors.Wrap(err, "Depository: failed to get counter")
 	}
 
 	kid := calculateKID(curr, []byte(val))
@@ -289,12 +449,6 @@ func putValue(ctx context.ContextInterface, val string) (uint64, string, error) 
 		return 0, "", errors.Wrap(err, "Depository: failed to put DepositoryKey")
 	}
 
-	// increase counter
-	err = incrementCounter(ctx)
-	if err != nil {
-		return 0, "", errors.Wrap(err, "Depository: failed to increase counter")
-	}
-
 	return curr.Current(), kid, nil
 }
 
@@ -311,7 +465,7 @@ func currentCounter(ctx context.ContextInterface) (*library.Counter, error) {
 	return library.BytesToCounter(val)
 }
 
-func incrementCounter(ctx context.ContextInterface) error {
+func incrementCounter(ctx context.ContextInterface, offset uint64) error {
 	val, err := ctx.GetStub().GetState(IndexerKey)
 	if err != nil {
 		return errors.Wrap(err, "Depository: failed to read counter")
@@ -321,7 +475,11 @@ func incrementCounter(ctx context.ContextInterface) error {
 	if err != nil {
 		return errors.Wrap(err, "Depository: invalid counter")
 	}
-	counter.Increment()
+	err = counter.Increment(offset)
+	if err != nil {
+		return errors.Wrap(err, "Depositoy: increment counter")
+	}
+
 	err = ctx.GetStub().PutState(IndexerKey, counter.Bytes())
 	if err != nil {
 		return errors.Wrap(err, "Depository: failed to update counter")

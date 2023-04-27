@@ -14,6 +14,18 @@
         "description": "用于初始化合约"
       },
       {
+        "name": "EnableACL",
+        "args":[],
+        "condition":"none",
+        "description": "启用ACL访问控制(默认禁用)"
+      },
+      {
+        "name": "DisableACL",
+        "args":[],
+        "condition":"none",
+        "description": "禁用ACL访问控制(默认禁用)"
+      },
+      {
         "name": "GetValueByIndex",
         "args":["string index"],
         "condition":"无",
@@ -26,10 +38,28 @@
         "description": "基于存证key id查询存证"
       },
       {
-        "name": "PutValue",
+        "name": "BatchPutUntrustValue",
+        "args":["string batchValStr"],
+        "condition":"无",
+        "description": "用于批次的生成存证(无message签名)"
+      },
+      {
+        "name": "PutUntrustValue",
         "args":["string val"],
-        "condition":"仅允许合约 client 角色使用",
-        "description": "用于生成存证"
+        "condition":"无",
+        "description": "用于生成存证(无message签名)"
+      },
+      {
+        "name": "BatchPutValue",
+        "args":["message msg","string batchValStr"],
+        "condition":"无",
+        "description": "用于批次的生成存证"
+      },
+      {
+        "name": "PutValue",
+        "args":["message msg","string val"],
+        "condition":"仅允许合约 client 角色使用(启用ACL后)",
+        "description": "用于生成存证(有message签名)"
       },
       {
         "name": "Total",

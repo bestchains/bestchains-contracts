@@ -16,7 +16,11 @@ limitations under the License.
 
 package library
 
-import "errors"
+import (
+	"errors"
+
+	safemath "github.com/bestchains/bestchains-contracts/library/math"
+)
 
 var (
 	ErrNilCounter = errors.New("nil counter")
@@ -44,12 +48,22 @@ func (counter *Counter) Current() uint64 {
 	return counter.number
 }
 
-func (counter *Counter) Increment() {
-	counter.number++
+func (counter *Counter) Increment(offset uint64) error {
+	succ, newCount := safemath.TryAdd(counter.Current(), offset)
+	if !succ {
+		return safemath.ErrMathOpOverflowed
+	}
+	counter.number = newCount
+	return nil
 }
 
-func (counter *Counter) Decrement() {
-	counter.number--
+func (counter *Counter) Decrement(offset uint64) error {
+	succ, newCount := safemath.TrySub(counter.number, offset)
+	if !succ {
+		return safemath.ErrMathOpOverflowed
+	}
+	counter.number = newCount
+	return nil
 }
 
 func (counter *Counter) Reset() {

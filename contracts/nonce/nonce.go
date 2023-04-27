@@ -84,8 +84,10 @@ func (nonce *Nonce) Increment(ctx context.ContextInterface, account string) (uin
 	if err != nil {
 		return 0, err
 	}
-	counter.Increment()
-
+	err = counter.Increment(1)
+	if err != nil {
+		return 0, err
+	}
 	err = ctx.GetStub().PutState(nonceKey, counter.Bytes())
 	if err != nil {
 		return 0, err
