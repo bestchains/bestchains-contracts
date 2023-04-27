@@ -22,11 +22,9 @@ import (
 	"github.com/bestchains/bestchains-contracts/library/context"
 )
 
-type EventPutUntrustValue struct {
-	Index    uint64
-	KID      string
-	Operator string
-	Owner    string
+type EventBatchPutValue struct {
+	Total uint64
+	Items []EventPutValue
 }
 
 type EventPutValue struct {
@@ -48,6 +46,8 @@ type IDepository interface {
 	DisableACL(ctx context.ContextInterface) error
 	// Total k/v paris stored
 	Total(ctx context.ContextInterface) (uint64, error)
+	// BatchPutValue stores key-value in a batch
+	BatchPutUntrustValue(ctx context.ContextInterface, batchVals string) (string, error)
 	// PutUntrustValue stores kval which do not have real owner's signature
 	PutUntrustValue(ctx context.ContextInterface, val string) (string, error)
 	// PutValue stores kval with pre-defined key calculation

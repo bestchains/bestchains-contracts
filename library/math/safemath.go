@@ -16,6 +16,12 @@ limitations under the License.
 
 package math
 
+import "errors"
+
+var (
+	ErrMathOpOverflowed = errors.New("math operation overflowed")
+)
+
 func TryAdd(a uint64, b uint64) (bool, uint64) {
 	c := a + b
 	if c < a {

@@ -28,13 +28,13 @@ func TestCounter(t *testing.T) {
 
 	assert.Equal(t, []byte(Uint64ToString(0)), c.Bytes())
 
-	c.Increment()
+	assert.Nil(t, c.Increment(1))
 	assert.Equal(t, uint64(1), c.Current())
 
-	c.Increment()
-	assert.Equal(t, uint64(2), c.Current())
+	assert.Nil(t, c.Increment(2))
+	assert.Equal(t, uint64(3), c.Current())
 
-	c.Decrement()
+	assert.Nil(t, c.Decrement(2))
 	assert.Equal(t, uint64(1), c.Current())
 
 	c.Reset()
