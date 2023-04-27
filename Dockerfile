@@ -1,5 +1,5 @@
-ARG GO_VER=1.18
-ARG ALPINE_VER=3.14
+ARG GO_VER=1.20
+ARG ALPINE_VER=3.17
 
 FROM hyperledgerk8s/contract-base:v0.0.1 as build
 
