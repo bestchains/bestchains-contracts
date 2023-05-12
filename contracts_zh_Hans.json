@@ -2,87 +2,90 @@
   {
     "name": "Depository",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "提供存证应用的接口",
     "package": "example/depository",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "已完成",
     "interfaces": [
       {
         "name": "Initialize",
-        "args":[""],
-        "condition":"无",
+        "args": [""],
+        "condition": "无",
         "description": "用于初始化合约"
       },
       {
         "name": "EnableACL",
-        "args":[],
-        "condition":"none",
+        "args": [],
+        "condition": "none",
         "description": "启用ACL访问控制(默认禁用)"
       },
       {
         "name": "DisableACL",
-        "args":[],
-        "condition":"none",
+        "args": [],
+        "condition": "none",
         "description": "禁用ACL访问控制(默认禁用)"
       },
       {
         "name": "GetValueByIndex",
-        "args":["string index"],
-        "condition":"无",
+        "args": ["string index"],
+        "condition": "无",
         "description": "基于存证索引(index)查询存证"
       },
       {
         "name": "GetValueByKID",
-        "args":["string kid"],
-        "condition":"无",
+        "args": ["string kid"],
+        "condition": "无",
         "description": "基于存证key id查询存证"
       },
       {
         "name": "BatchPutUntrustValue",
-        "args":["string batchValStr"],
-        "condition":"无",
+        "args": ["string batchValStr"],
+        "condition": "无",
         "description": "用于批次的生成存证(无message签名)"
       },
       {
         "name": "PutUntrustValue",
-        "args":["string val"],
-        "condition":"无",
+        "args": ["string val"],
+        "condition": "无",
         "description": "用于生成存证(无message签名)"
       },
       {
         "name": "BatchPutValue",
-        "args":["message msg","string batchValStr"],
-        "condition":"无",
+        "args": ["message msg", "string batchValStr"],
+        "condition": "无",
         "description": "用于批次的生成存证"
       },
       {
         "name": "PutValue",
-        "args":["message msg","string val"],
-        "condition":"仅允许合约 client 角色使用(启用ACL后)",
+        "args": ["message msg", "string val"],
+        "condition": "仅允许合约 client 角色使用(启用ACL后)",
         "description": "用于生成存证(有message签名)"
       },
       {
         "name": "Total",
-        "args":[""],
-        "condition":"无",
+        "args": [""],
+        "condition": "无",
         "description": "用于获取存证总数"
       },
       {
         "name": "Check",
-        "args":["string account", "uint64 dstNonce"],
-        "condition":"无",
+        "args": ["string account", "uint64 dstNonce"],
+        "condition": "无",
         "description": "用于核验 account 的 nonce 值是否与 dstNonce 相同"
       },
       {
         "name": "Current",
-        "args":["string account"],
-        "condition":"无",
+        "args": ["string account"],
+        "condition": "无",
         "description": "用于查询 account 的 nonce 值"
       },
       {
         "name": "Increment",
-        "args":["string account"],
-        "condition":"无",
+        "args": ["string account"],
+        "condition": "无",
         "description": "用于使 account 的 nonce 值自增 1"
       }
     ]
@@ -90,69 +93,72 @@
   {
     "name": "AccessControl",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "提供基于角色的访问控制",
     "package": "example/acl",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "已完成",
     "interfaces": [
       {
         "name": "GetRoleAdmin",
-        "args":["string role"],
-        "condition":"无",
+        "args": ["string role"],
+        "condition": "无",
         "description": "获取管理 role 角色的 admin"
       },
       {
         "name": "GrantRole",
-        "args":["string role", "string account"],
-        "condition":"仅允许合约 admin 角色使用",
+        "args": ["string role", "string account"],
+        "condition": "仅允许合约 admin 角色使用",
         "description": "用于为 account 授予 role 角色"
       },
       {
         "name": "HasRole",
-        "args":["string role", "string account"],
-        "condition":"无",
+        "args": ["string role", "string account"],
+        "condition": "无",
         "description": "用于查询 account 是否拥有 role 角色"
       },
       {
         "name": "Initialize",
-        "args":[""],
-        "condition":"无",
+        "args": [""],
+        "condition": "无",
         "description": "用于初始化合约"
       },
       {
         "name": "Owner",
-        "args":[""],
-        "condition":"无",
+        "args": [""],
+        "condition": "无",
         "description": "用于查询合约的 owner 地址"
       },
       {
         "name": "RenounceOwnership",
-        "args":[""],
-        "condition":"仅允许合约 owner 使用",
+        "args": [""],
+        "condition": "仅允许合约 owner 使用",
         "description": "用于重置合约 owner 至零地址"
       },
       {
         "name": "RenounceRole",
-        "args":["string role", "string account"],
-        "condition":"无",
+        "args": ["string role", "string account"],
+        "condition": "无",
         "description": "用于取消自身的 role 角色"
       },
       {
         "name": "RevokeRole",
-        "args":["string role", "string account"],
-        "condition":"仅允许合约 admin 角色使用",
+        "args": ["string role", "string account"],
+        "condition": "仅允许合约 admin 角色使用",
         "description": "用于取消 account 的 role 角色"
       },
       {
         "name": "SetRoleAdmin",
-        "args":["string role","string adminRole"],
-        "condition":"仅允许合约 owner 使用",
+        "args": ["string role", "string adminRole"],
+        "condition": "仅允许合约 owner 使用",
         "description": "用于修改 Role 管理权限"
       },
       {
         "name": "TransferOwnership",
-        "args":["string newOwner"],
-        "condition":"仅允许合约 owner 使用",
+        "args": ["string newOwner"],
+        "condition": "仅允许合约 owner 使用",
         "description": "用于将合约 owner 转移给 newOwner"
       }
     ]
@@ -160,27 +166,30 @@
   {
     "name": "Nonce",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "提供类以太坊账户Nonce值的视线",
     "package": "example/nonce",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "已完成",
     "interfaces": [
       {
         "name": "Check",
-        "args":["string account", "uint64 dstNonce"],
-        "condition":"无",
+        "args": ["string account", "uint64 dstNonce"],
+        "condition": "无",
         "description": "用于核验 account 的 nonce 值是否与 dstNonce 相同"
       },
       {
         "name": "Current",
-        "args":["string account"],
-        "condition":"无",
+        "args": ["string account"],
+        "condition": "无",
         "description": "用于查询 account 的 nonce 值"
       },
       {
         "name": "Increment",
-        "args":["string account"],
-        "condition":"无",
+        "args": ["string account"],
+        "condition": "无",
         "description": "用于使 account 的 nonce 值自增 1"
       }
     ]
@@ -188,27 +197,30 @@
   {
     "name": "Timelock",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "提供时间锁合约,用于实现操作延时执行",
     "package": "example/timelock",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "已完成",
     "interfaces": [
       {
         "name": "Execute",
-        "args":["string opHash"],
-        "condition":"无",
+        "args": ["string opHash"],
+        "condition": "无",
         "description": "用于执行哈希值为 opHash 值的操作"
       },
       {
         "name": "GetValue",
-        "args":["string key"],
-        "condition":"无",
+        "args": ["string key"],
+        "condition": "无",
         "description": "用于查询 key 对应的 value"
       },
       {
         "name": "Schedule",
-        "args":["string key", "string value", "uint64 duration"],
-        "condition":"无",
+        "args": ["string key", "string value", "uint64 duration"],
+        "condition": "无",
         "description": "用于生成设置 key-value 键值对的操作，并令该操作在 duration 时长后解锁"
       }
     ]
@@ -216,17 +228,23 @@
   {
     "name": "ERC1155",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "基于ERC1155协议实现的NFT合约",
     "package": "example/erc1155",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "进行中"
   },
   {
     "name": "ERC20",
     "version": "v0.0.1",
+    "language": "Golang",
     "from": "Bestchains Team",
     "description": "基于ERC20协议实现的同质化代币合约",
     "package": "example/erc20",
+    "createdAt": "1683869600398",
+    "updatedAt": "1683869600398",
     "status": "进行中"
   }
 ]
