@@ -14,13 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package license
 
 import (
-	"fmt"
-	"time"
+	"github.com/bestchains/bestchains-contracts/contracts/nonce"
+	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func main() {
-	fmt.Printf("CurrentTime in milliseconds: %d \n", time.Now().UnixMilli())
+// LicenseContract implements ILicense interface
+type LicenseContract struct {
+	contractapi.Contract
+	nonce.INonce
 }
+
+// TODO...
+// var _ ILicense = new(LicenseContract)
