@@ -1,0 +1,23 @@
+name: unit-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  make-checks:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+      - name: run tests
+        run: make test
