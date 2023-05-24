@@ -14,30 +14,115 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package library
+package library_test
 
 import (
 	"testing"
 
+	"github.com/bestchains/bestchains-contracts/library"
+	"github.com/bestchains/bestchains-contracts/library/math"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCounter(t *testing.T) {
-	c := &Counter{}
-	assert.Equal(t, uint64(0), c.Current())
+func TestNewCounter(t *testing.T) {
+	initNumber := uint64(42)
+	counter := library.NewCounter(initNumber)
+	assert.NotNil(t, counter)
+	assert.Equal(t, initNumber, counter.Current())
+}
 
-	assert.Equal(t, []byte(Uint64ToString(0)), c.Bytes())
+func TestCounterString(t *testing.T) {
+	t.Run("NilCounter", func(t *testing.T) {
+		counter := (*library.Counter)(nil)
+		str := counter.String()
+		assert.Equal(t, "", str)
+	})
 
-	assert.Nil(t, c.Increment(1))
-	assert.Equal(t, uint64(1), c.Current())
+	t.Run("ValidCounter", func(t *testing.T) {
+		initNumber := uint64(42)
+		counter := library.NewCounter(initNumber)
+		str := counter.String()
+		assert.Equal(t, "42", str)
+	})
+}
 
-	assert.Nil(t, c.Increment(2))
-	assert.Equal(t, uint64(3), c.Current())
+func TestCounterBytes(t *testing.T) {
+	t.Run("NilCounter", func(t *testing.T) {
+		counter := (*library.Counter)(nil)
+		bytes := counter.Bytes()
+		assert.Empty(t, bytes)
+	})
 
-	assert.Nil(t, c.Decrement(2))
-	assert.Equal(t, uint64(1), c.Current())
+	t.Run("ValidCounter", func(t *testing.T) {
+		initNumber := uint64(42)
+		counter := library.NewCounter(initNumber)
+		bytes := counter.Bytes()
+		assert.Equal(t, []byte("42"), bytes)
+	})
+}
 
-	c.Reset()
+func TestCounterCurrent(t *testing.T) {
+	initNumber := uint64(42)
+	counter := library.NewCounter(initNumber)
+	current := counter.Current()
+	assert.Equal(t, initNumber, current)
+}
 
-	assert.Equal(t, uint64(0), c.Current())
+func TestCounterIncrement(t *testing.T) {
+	t.Run("NilCounter", func(t *testing.T) {
+		counter := (*library.Counter)(nil)
+		err := counter.Increment(10)
+		assert.Equal(t, library.ErrNilCounter, err)
+	})
+
+	t.Run("ValidIncrement", func(t *testing.T) {
+		initNumber := uint64(42)
+		offset := uint64(10)
+		counter := library.NewCounter(initNumber)
+		err := counter.Increment(offset)
+		assert.NoError(t, err)
+		assert.Equal(t, initNumber+offset, counter.Current())
+	})
+
+	t.Run("Overflow", func(t *testing.T) {
+		initNumber := uint64(18446744073709551615) // Max uint64 value
+		offset := uint64(10)
+		counter := library.NewCounter(initNumber)
+		err := counter.Increment(offset)
+		assert.Equal(t, math.ErrMathOpOverflowed, err)
+		assert.Equal(t, initNumber, counter.Current())
+	})
+}
+
+func TestCounterDecrement(t *testing.T) {
+	t.Run("NilCounter", func(t *testing.T) {
+		counter := (*library.Counter)(nil)
+		err := counter.Decrement(10)
+		assert.Equal(t, library.ErrNilCounter, err)
+	})
+
+	t.Run("ValidDecrement", func(t *testing.T) {
+		initNumber := uint64(42)
+		offset := uint64(10)
+		counter := library.NewCounter(initNumber)
+		err := counter.Decrement(offset)
+		assert.NoError(t, err)
+		assert.Equal(t, initNumber-offset, counter.Current())
+	})
+
+	t.Run("Overflow", func(t *testing.T) {
+		initNumber := uint64(10)
+		offset := uint64(20)
+		counter := library.NewCounter(initNumber)
+		err := counter.Decrement(offset)
+		assert.Equal(t, math.ErrMathOpOverflowed, err)
+		assert.Equal(t, initNumber, counter.Current())
+	})
+}
+
+func TestCounterReset(t *testing.T) {
+	initNumber := uint64(42)
+	counter := library.NewCounter(initNumber)
+	counter.Reset()
+	assert.Equal(t, uint64(0), counter.Current())
 }
