@@ -246,5 +246,16 @@
     "createdAt": "1683869600398",
     "updatedAt": "1683869600398",
     "status": "进行中"
+  },
+  {
+    "name": "Market",
+    "version": "v0.0.1",
+    "language": "Golang",
+    "from": "Bestchains Team",
+    "description": "实现组件市场功能,支持仓库管理、组件管理、License管理",
+    "package": "example/market",
+    "createdAt": "1684835189172",
+    "updatedAt": "1684835189172",
+    "status": "进行中"
   }
 ]

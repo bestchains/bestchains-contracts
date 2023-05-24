@@ -23,13 +23,24 @@ import (
 )
 
 var (
+	// ErrNilCounter is returned when a nil counter is used.
 	ErrNilCounter = errors.New("nil counter")
 )
 
+// Counter is a data type that represents a counter that can be incremented,
+// decremented, and reset.
 type Counter struct {
 	number uint64
 }
 
+// NewCounter creates a new counter with the specified initial value.
+func NewCounter(initNumber uint64) *Counter {
+	return &Counter{
+		number: initNumber,
+	}
+}
+
+// String returns the string representation of the counter.
 func (counter *Counter) String() string {
 	if counter == nil {
 		return ""
@@ -37,6 +48,7 @@ func (counter *Counter) String() string {
 	return Uint64ToString(counter.number)
 }
 
+// Bytes returns the byte slice representation of the counter.
 func (counter *Counter) Bytes() []byte {
 	if counter == nil {
 		return []byte{}
@@ -44,11 +56,16 @@ func (counter *Counter) Bytes() []byte {
 	return []byte(Uint64ToString(counter.number))
 }
 
+// Current returns the current value of the counter.
 func (counter *Counter) Current() uint64 {
 	return counter.number
 }
 
+// Increment adds the specified offset to the counter.
 func (counter *Counter) Increment(offset uint64) error {
+	if counter == nil {
+		return ErrNilCounter
+	}
 	succ, newCount := safemath.TryAdd(counter.Current(), offset)
 	if !succ {
 		return safemath.ErrMathOpOverflowed
@@ -57,7 +74,11 @@ func (counter *Counter) Increment(offset uint64) error {
 	return nil
 }
 
+// Decrement subtracts the specified offset from the counter.
 func (counter *Counter) Decrement(offset uint64) error {
+	if counter == nil {
+		return ErrNilCounter
+	}
 	succ, newCount := safemath.TrySub(counter.number, offset)
 	if !succ {
 		return safemath.ErrMathOpOverflowed
@@ -66,6 +87,7 @@ func (counter *Counter) Decrement(offset uint64) error {
 	return nil
 }
 
+// Reset sets the counter to zero.
 func (counter *Counter) Reset() {
 	counter.number = 0
 }

@@ -14,18 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package license
+package main
 
 import (
+	"github.com/bestchains/bestchains-contracts/contracts/market"
 	"github.com/bestchains/bestchains-contracts/contracts/nonce"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-// LicenseContract implements ILicense interface
-type LicenseContract struct {
-	contractapi.Contract
-	nonce.INonce
-}
+func main() {
+	depositoryContract := market.NewMarketContract(
+		nonce.NewNonceContract(),
+	)
 
-// TODO...
-// var _ ILicense = new(LicenseContract)
+	cc, err := contractapi.NewChaincode(depositoryContract)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if err := cc.Start(); err != nil {
+		panic(err.Error())
+	}
+}
