@@ -53,69 +53,53 @@ type DepositoryContract struct {
 	access.IAccessControl
 }
 
-/*
-NewDepositoryContract creates a new instance of a DepositoryContract object
-with the given nonceContract and aclContract parameters.
-
-@param nonceContract: An instance implementing the INonce interface.
-@param aclContract: An instance implementing the IAccessControl interface.
-
-@return: A pointer to the newly created DepositoryContract object.
-*/
+// NewDepositoryContract creates a new DepositoryContract instance with the given nonce and access control contracts.
 func NewDepositoryContract(nonceContract nonce.INonce, aclContract access.IAccessControl) *DepositoryContract {
-	DepositoryContract := new(DepositoryContract)
-	DepositoryContract.Name = "org.bestchains.com.DepositoryContract"
+	depositoryContract := new(DepositoryContract)
 
-	DepositoryContract.INonce = nonceContract
-	DepositoryContract.IAccessControl = aclContract
+	// Set the name of the depository contract
+	depositoryContract.Name = "org.bestchains.com.DepositoryContract"
 
-	DepositoryContract.TransactionContextHandler = new(context.Context)
-	DepositoryContract.BeforeTransaction = context.BeforeTransaction
+	// Set the INonce and IAccessControl contracts
+	depositoryContract.INonce = nonceContract
+	depositoryContract.IAccessControl = aclContract
 
-	return DepositoryContract
+	// Set the TransactionContextHandler and BeforeTransaction
+	depositoryContract.TransactionContextHandler = new(context.Context)
+	depositoryContract.BeforeTransaction = context.BeforeTransaction
+
+	return depositoryContract
 }
 
-/*
-onlyRole checks if the caller has a specific role in the Depository contract.
-- ctx: the context interface for the blockchain state.
-- role: the role to check for.
-Returns an error if the caller does not have the role or if there is an issue with the blockchain.
-*/
+// onlyRole checks if the caller has the specified role.
 func (bc *DepositoryContract) onlyRole(ctx context.ContextInterface, role []byte) error {
+	// Check if the caller has the specified role.
 	result, err := bc.HasRole(ctx, role, ctx.MsgSender().String())
 	if err != nil {
 		return errors.Wrap(err, "onlyRole")
 	}
 	if !result {
+		// Caller doesn't have the role.
 		return errors.New("onlyRole: not authorized")
 	}
+	// Caller has the role.
 	return nil
 }
 
-/*
-Initialize initializes the DepositoryContract instance by calling the `Initialize` method of its parent `IAccessControl` instance. It returns an error if there was a problem during initialization.
-
-Parameters:
-- ctx: A context.ContextInterface instance representing the current execution context.
-
-Returns:
-- error: An error if there was a problem during initialization, or nil if initialization succeeded.
-*/
+// Initialize initializes the DepositoryContract and returns an error if there is one.
 func (bc *DepositoryContract) Initialize(ctx context.ContextInterface) error {
+	// Call the parent's Initialize function.
 	err := bc.IAccessControl.Initialize(ctx)
 	if err != nil {
+		// If there was an error, return it.
 		return err
 	}
 
+	// If there was no error, return nil.
 	return nil
 }
 
-/*
-EnableACL enables access control list (ACL) on this DepositoryContract instance.
-
-@param ctx context.ContextInterface: the context interface
-@return error: returns an error if there was one during the state update
-*/
+// EnableACL enables the access control list
 func (bc *DepositoryContract) EnableACL(ctx context.ContextInterface) error {
 	err := ctx.GetStub().PutState(EnableACLKey, library.True.Bytes())
 	if err != nil {
@@ -124,16 +108,7 @@ func (bc *DepositoryContract) EnableACL(ctx context.ContextInterface) error {
 	return nil
 }
 
-/*
-DisableACL disables the Access Control List (ACL) of the DepositoryContract.
-It takes a context interface as the only argument.
-
-Arguments:
-- ctx (context.ContextInterface): The context interface to interact with the blockchain.
-
-Returns:
-- error: Returns an error if there was any issue while putting the EnableACLKey's value to false in the blockchain's state database. Returns nil otherwise.
-*/
+// DisableACL disables the access control list
 func (bc *DepositoryContract) DisableACL(ctx context.ContextInterface) error {
 	err := ctx.GetStub().PutState(EnableACLKey, library.False.Bytes())
 	if err != nil {
@@ -142,6 +117,7 @@ func (bc *DepositoryContract) DisableACL(ctx context.ContextInterface) error {
 	return nil
 }
 
+// aclEnabled returns a boolean indicating whether the access control list is enabled
 func (bc *DepositoryContract) aclEnabled(ctx context.ContextInterface) (bool, error) {
 	val, err := ctx.GetStub().GetState(EnableACLKey)
 	if err != nil {
@@ -152,16 +128,7 @@ func (bc *DepositoryContract) aclEnabled(ctx context.ContextInterface) (bool, er
 
 }
 
-/*
-Total returns the total number of deposits made to the DepositoryContract.
-
-Parameters:
-- ctx (context.ContextInterface): The context interface for the function.
-
-Return:
-- uint64: The total number of deposits made to the DepositoryContract.
-- error: An error, if the operation failed.
-*/
+// Total returns the total count
 func (bc *DepositoryContract) Total(ctx context.ContextInterface) (uint64, error) {
 	curr, err := currentCounter(ctx)
 	if err != nil {
@@ -170,38 +137,33 @@ func (bc *DepositoryContract) Total(ctx context.ContextInterface) (uint64, error
 	return curr.Current(), nil
 }
 
-/*
-BatchPutUntrustValue put a list of values without second-class user's trusted signature
-
-Args:
-- ctx (context.ContextInterface): The context interface.
-- batchVals (string): The batched value string (joined by comma) to be stored in the depository.
-
-Returns:
-- (string): The valud kids joined by comma
-- (error): An error if the values cannot be stored
-*/
+// BatchPutUntrustValue puts multiple untrusted values into the DepositoryContract.
+// It receives a comma-separated string of values and returns a comma-separated string of corresponding KIDs (keys).
+// If the batchVals string is empty, it returns an error.
 func (bc *DepositoryContract) BatchPutUntrustValue(ctx context.ContextInterface, batchVals string) (string, error) {
-	// batchVals cannot be empty
 	if batchVals == "" {
 		return "", errors.New("empty batch value string")
 	}
 	vals := strings.Split(batchVals, ",")
 
-	// get current counter
+	// Get the current counter value from the context.
 	curr, err := currentCounter(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get counter")
 	}
 
+	// Initialize a slice to store the KIDs generated for each value.
 	kids := make([]string, len(vals))
+
+	// Initialize an EventBatchPutValue to record the batch operation.
 	event := &EventBatchPutValue{
 		Total: uint64(len(vals)),
 		Items: make([]EventPutValue, len(vals)),
 	}
 
+	// Loop through each value and put it into the DepositoryContract.
+	// Record the corresponding KID and other metadata in the event and kids slice.
 	for i, val := range vals {
-		// put value into ledger
 		index, kid, err := putValue(ctx, curr, val)
 		if err != nil {
 			return "", err
@@ -215,52 +177,44 @@ func (bc *DepositoryContract) BatchPutUntrustValue(ctx context.ContextInterface,
 		}
 	}
 
-	// increase counter
+	// Increment the counter by the number of values added.
 	err = incrementCounter(ctx, uint64(len(vals)))
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to increase counter")
 	}
 
-	// emit event BatchPutUntrustValue
+	// Emit the BatchPutUntrustValue event.
 	err = ctx.EmitEvent("BatchPutUntrustValue", event)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to emit event BatchPutUntrustValue")
 	}
 
+	// Join the KIDs into a comma-separated string and return it.
 	return strings.Join(kids, ","), nil
 }
 
-/*
-PutUntrustValue put a value without second-class user's trusted signature
-
-Args:
-- ctx (context.ContextInterface): The context interface.
-- val (string): The value to be stored in the depository.
-
-Returns:
-- (string): The value associated with the given KID.
-- (error): An error if the value could not be stored.
-*/
+// PutUntrustValue adds an untrusted value to the DepositoryContract.
+// It takes a context and a string value to add, and returns the resulting KID (key ID) and an error (if any).
 func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val string) (string, error) {
-	// get current counter
+	// Get the current counter value.
 	curr, err := currentCounter(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get counter")
 	}
 
-	// put value into ledger
+	// Add the value to the depository and get its index and KID.
 	index, kid, err := putValue(ctx, curr, val)
 	if err != nil {
 		return "", err
 	}
 
-	// increase counter
+	// Increment the counter.
 	err = incrementCounter(ctx, 1)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to increase counter")
 	}
 
-	// emit event PutUntrustValue
+	// Emit an event with information about the added value.
 	err = ctx.EmitEvent("PutUntrustValue", &EventPutValue{
 		Index:    index,
 		KID:      kid,
@@ -271,66 +225,67 @@ func (bc *DepositoryContract) PutUntrustValue(ctx context.ContextInterface, val 
 		return "", errors.Wrap(err, "Depository: failed to emit EventPutUntrustValue")
 	}
 
+	// Return the KID of the added value.
 	return kid, nil
 }
 
-/*
-BatchPutValue put a list of values with second-class user's trusted signature
-
-Args:
-- ctx (context.ContextInterface): The context interface.
-- msg (context.Message): The message containing the transaction details.
-- batchVals (string): The batched value string (joined by comma) to be stored in the depository.
-
-Returns:
-- (string): The valud kids joined by comma
-- (error): An error if the values cannot be stored
-*/
+// BatchPutValue puts multiple values into the DepositoryContract's state.
+// It takes a batchVals string, which is a comma-separated list of values to be inserted.
+// It returns a string representing the KIDs (Key IDs) of the inserted values and any error encountered.
 func (bc *DepositoryContract) BatchPutValue(ctx context.ContextInterface, msg context.Message, batchVals string) (string, error) {
-	// check acl if enabled
+	// Check if access control is enabled.
 	enabled, err := bc.aclEnabled(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "DepositoryContract: get aclEnabled")
 	}
 	if enabled {
+		// If access control is enabled, check if the caller has the RoleClient role.
 		if err = bc.onlyRole(ctx, RoleClient[:]); err != nil {
 			return "", errors.Wrap(err, "onlyClient")
 		}
 	}
 
-	// increase nonce
+	// Check the nonce of the caller to prevent replay attacks.
 	if err = bc.INonce.Check(ctx, ctx.MsgSender().String(), msg.Nonce); err != nil {
 		return "", err
 	}
+	// Increment the nonce for the caller.
 	if _, err = bc.INonce.Increment(ctx, ctx.MsgSender().String()); err != nil {
 		return "", err
 	}
 
-	// batchVals cannot be empty
+	// Make sure batchVals is not empty.
 	if batchVals == "" {
 		return "", errors.New("empty batch value string")
 	}
+	// Split batchVals into individual values.
 	vals := strings.Split(batchVals, ",")
 
-	// get current counter
+	// Get the current counter value.
 	curr, err := currentCounter(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get counter")
 	}
 
+	// Initialize an array to store the KIDs of the inserted values.
 	kids := make([]string, len(vals))
+
+	// Initialize an event to store information about the inserted values.
 	event := &EventBatchPutValue{
 		Total: uint64(len(vals)),
 		Items: make([]EventPutValue, len(vals)),
 	}
 
+	// Loop through each value in vals and insert it into the DepositoryContract's state.
 	for i, val := range vals {
-		// put value into ledger
+		// Insert the value into the state and get its index and KID.
 		index, kid, err := putValue(ctx, curr, val)
 		if err != nil {
 			return "", err
 		}
 		kids[i] = kid
+
+		// Add information about the inserted value to the event.
 		event.Items[i] = EventPutValue{
 			Index:    index,
 			KID:      kid,
@@ -339,38 +294,29 @@ func (bc *DepositoryContract) BatchPutValue(ctx context.ContextInterface, msg co
 		}
 	}
 
-	// increase counter
+	// Increment the counter by the number of inserted values.
 	err = incrementCounter(ctx, uint64(len(vals)))
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to increase counter")
 	}
 
-	// emit event BatchPutUntrustValue
+	// Emit an event to indicate that the values have been inserted.
 	err = ctx.EmitEvent("BatchPutUntrustValue", event)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to emit event BatchPutUntrustValue")
 	}
 
+	// Join the KIDs of the inserted values and return them.
 	return strings.Join(kids, ","), nil
 }
 
-/*
-PutValue puts a new value into the depository. It takes a context interface, a message, and a string value as input.
-It returns the key ID of the value and an error.
-
-Params:
-- ctx (context.ContextInterface): The context interface for the transaction.
-- msg (context.Message): The message containing the transaction details.
-- val (string): The value to be stored in the depository.
-
-Returns:
-- string: The key ID of the stored value.
-- error: An error if any occurred during the transaction.
-*/
+// PutValue adds a new value to the DepositoryContract and returns its KID.
+// It checks ACL if enabled, increases the nonce, gets the current counter,
+// puts the value into the ledger, increases the counter, and emits an event.
 func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context.Message, val string) (string, error) {
 	var err error
 
-	// check acl if enabled
+	// Check ACL if enabled
 	enabled, err := bc.aclEnabled(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "DepositoryContract: get aclEnabled")
@@ -381,7 +327,7 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 		}
 	}
 
-	// increase nonce
+	// Increase nonce
 	if err = bc.INonce.Check(ctx, ctx.MsgSender().String(), msg.Nonce); err != nil {
 		return "", err
 	}
@@ -389,25 +335,25 @@ func (bc *DepositoryContract) PutValue(ctx context.ContextInterface, msg context
 		return "", err
 	}
 
-	// get current counter
+	// Get current counter
 	curr, err := currentCounter(ctx)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get counter")
 	}
 
-	// put value into ledger
+	// Put value into ledger
 	index, kid, err := putValue(ctx, curr, val)
 	if err != nil {
 		return "", err
 	}
 
-	// increase counter
+	// Increase counter
 	err = incrementCounter(ctx, 1)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to increase counter")
 	}
 
-	// emit event PutValue
+	// Emit event PutValue
 	err = ctx.EmitEvent("PutValue", &EventPutValue{
 		Index:    index,
 		KID:      kid,
@@ -488,26 +434,26 @@ func incrementCounter(ctx context.ContextInterface, offset uint64) error {
 	return nil
 }
 
-/*
-GetValueByIndex retrieves a value from the DepositoryContract using an index.
-
-@param ctx: A context interface.
-@param index: A string representing the index to retrieve the value from.
-
-@returns A string representing the retrieved value.
-@returns An error if there was an issue retrieving the value.
-*/
+// GetValueByIndex retrieves the value at the index provided
+// from the DepositoryContract.
+// The index is expected to be a string representation of a byte slice
+// that can be converted to a counter.
+// If the value is found, it is returned as a string.
+// If an error is encountered, it is returned with additional context.
 func (bc *DepositoryContract) GetValueByIndex(ctx context.ContextInterface, index string) (string, error) {
-	// try counter
+	// Convert the index string to a counter
 	counter, err := library.BytesToCounter([]byte(index))
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get val by counter or key id")
 	}
+
+	// Get the value associated with the counter
 	val, err := getValByCounter(ctx, counter)
 	if err != nil {
 		return "", errors.Wrap(err, "Depository: failed to get val by counter or key id")
 	}
 
+	// Return the value as a string
 	return string(val), nil
 }
 
@@ -529,17 +475,9 @@ func getValByCounter(ctx context.ContextInterface, counter *library.Counter) ([]
 	return getValByKID(ctx, string(kid))
 }
 
-/*
-GetValueByKID retrieves the value associated with the given KID.
-
-Args:
-- ctx (context.ContextInterface): The context interface.
-- kid (string): The KID to retrieve the value for.
-
-Returns:
-- (string): The value associated with the given KID.
-- (error): An error if the value could not be retrieved.
-*/
+// GetValueByKID returns the value associated with the given key ID.
+// It first retrieves the value from the context using the getValByKID helper function.
+// If the value is found, it is returned as a string. Otherwise, an error is returned.
 func (bc *DepositoryContract) GetValueByKID(ctx context.ContextInterface, kid string) (string, error) {
 	val, err := getValByKID(ctx, kid)
 	if err != nil {

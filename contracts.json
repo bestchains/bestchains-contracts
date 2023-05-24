@@ -246,5 +246,16 @@
     "createdAt": "1683869600398",
     "updatedAt": "1683869600398",
     "status": "WIP"
+  },
+  {
+    "name": "Market",
+    "version": "v0.0.1",
+    "language": "Golang",
+    "from": "Bestchains Team",
+    "description": "Implement Component Market including repository,component,license",
+    "package": "example/market",
+    "createdAt": "1684835189172",
+    "updatedAt": "1684835189172",
+    "status": "WIP"
   }
 ]
